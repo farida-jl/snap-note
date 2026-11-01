@@ -17,33 +17,40 @@ class _WidgetLibraryRepository implements LibraryRepository {
   Future<void> initialize() async {}
 
   @override
-  Stream<List<LibraryItem>> watchRecentItems() =>
-      Stream<List<LibraryItem>>.value(const [
-        LibraryItem(
-          id: 1,
-          type: LibraryItemType.note,
-          title: 'Make room for deep work',
-          description: 'Protect the first hour. Make space to think.',
-          displayTime: 'Today, 9:12',
-        ),
-        LibraryItem(
-          id: 2,
-          type: LibraryItemType.link,
-          title: 'A practical guide to deep work',
-          source: 'todoist.com · Yesterday',
-          displayTime: 'Yesterday',
-          duration: '8 MIN',
-        ),
-        LibraryItem(
-          id: 3,
-          type: LibraryItemType.video,
-          title: 'Build a ritual for focus',
-          source: 'Cal Newport',
-          displayTime: 'Yesterday',
-          duration: '12:34',
-          imageAsset: 'assets/images/video_still.png',
-        ),
-      ]);
+  Stream<List<LibraryItem>>
+  watchRecentItems() => Stream<List<LibraryItem>>.value(const [
+    LibraryItem(
+      id: 1,
+      collectionId: 1,
+      type: LibraryItemType.note,
+      title: 'Make room for deep work',
+      description: 'Protect the first hour. Make space to think.',
+      markdown:
+          '# Make room for deep work\n\nProtect the first hour. **Make space to think.**',
+      displayTime: 'Today, 9:12',
+    ),
+    LibraryItem(
+      id: 2,
+      collectionId: 3,
+      type: LibraryItemType.link,
+      title: 'A practical guide to deep work',
+      source: 'todoist.com · Yesterday',
+      url: 'https://example.com/articles/deep-work',
+      displayTime: 'Yesterday',
+      duration: '8 MIN',
+    ),
+    LibraryItem(
+      id: 3,
+      collectionId: 1,
+      type: LibraryItemType.video,
+      title: 'Build a ritual for focus',
+      source: 'Cal Newport',
+      url: 'https://example.com/videos/focus-ritual',
+      displayTime: 'Yesterday',
+      duration: '12:34',
+      imageAsset: 'assets/images/video_still.png',
+    ),
+  ]);
 }
 
 class _WidgetCollectionsRepository implements CollectionsRepository {

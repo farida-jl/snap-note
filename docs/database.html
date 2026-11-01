@@ -1,0 +1,544 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Snap Note — AppDatabase Diagram</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --background: #fffdf7;
+        --surface: #ffffff;
+        --primary: #243b53;
+        --text: #172b4d;
+        --muted: #627d98;
+        --border: #d9e2ec;
+        --accent: #f4b942;
+        --nullable: #f6f8fa;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        background: var(--background);
+        color: var(--text);
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system,
+          BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+
+      main {
+        width: min(1080px, calc(100% - 32px));
+        margin: 0 auto;
+        padding: 64px 0;
+      }
+
+      header {
+        max-width: 680px;
+        margin-bottom: 32px;
+      }
+
+      .eyebrow {
+        margin: 0 0 10px;
+        color: var(--muted);
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+
+      h1 {
+        margin: 0;
+        color: var(--primary);
+        font-family: Georgia, "Times New Roman", serif;
+        font-size: clamp(2rem, 5vw, 3.25rem);
+        letter-spacing: -0.04em;
+        line-height: 1.05;
+      }
+
+      .summary {
+        margin: 16px 0 0;
+        color: var(--muted);
+        line-height: 1.65;
+      }
+
+      .schema {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(180px, 0.42fr) minmax(0, 1fr);
+        gap: 24px;
+        align-items: center;
+      }
+
+      .entity {
+        overflow: hidden;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        box-shadow: 0 12px 32px rgb(36 59 83 / 8%);
+      }
+
+      .entity-header {
+        padding: 18px 20px;
+        background: var(--primary);
+        color: #ffffff;
+      }
+
+      .entity-header h2 {
+        margin: 0;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 1rem;
+      }
+
+      .entity-header p {
+        margin: 5px 0 0;
+        color: rgb(255 255 255 / 72%);
+        font-size: 0.75rem;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      th,
+      td {
+        padding: 12px 16px;
+        border-bottom: 1px solid var(--border);
+        text-align: left;
+        vertical-align: middle;
+      }
+
+      tr:last-child td {
+        border-bottom: 0;
+      }
+
+      th {
+        color: var(--muted);
+        font-size: 0.68rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      td {
+        font-size: 0.82rem;
+      }
+
+      td:first-child {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-weight: 650;
+      }
+
+      .type {
+        color: var(--muted);
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 0.75rem;
+      }
+
+      .badge {
+        display: inline-block;
+        padding: 3px 7px;
+        border-radius: 999px;
+        background: #fff1c7;
+        color: #6e4d00;
+        font-size: 0.64rem;
+        font-weight: 800;
+        letter-spacing: 0.04em;
+      }
+
+      .optional {
+        background: var(--nullable);
+        color: var(--muted);
+      }
+
+      .relationship {
+        display: grid;
+        justify-items: center;
+        gap: 10px;
+        color: var(--muted);
+        text-align: center;
+      }
+
+      .relationship-line {
+        width: 100%;
+        border-top: 2px solid var(--accent);
+      }
+
+      .relationship strong {
+        color: var(--primary);
+        font-size: 0.78rem;
+      }
+
+      .relationship span {
+        font-size: 0.72rem;
+        line-height: 1.5;
+      }
+
+      .notes {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 16px;
+        margin-top: 24px;
+      }
+
+      .note {
+        padding: 18px 20px;
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        background: rgb(255 255 255 / 55%);
+      }
+
+      .note h3 {
+        margin: 0 0 7px;
+        color: var(--primary);
+        font-size: 0.85rem;
+      }
+
+      .note p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 0.78rem;
+        line-height: 1.55;
+      }
+
+      .examples {
+        margin-top: 48px;
+      }
+
+      .examples-heading {
+        max-width: 680px;
+        margin-bottom: 18px;
+      }
+
+      .examples h2 {
+        margin: 0;
+        color: var(--primary);
+        font-family: Georgia, "Times New Roman", serif;
+        font-size: clamp(1.5rem, 3vw, 2rem);
+        letter-spacing: -0.03em;
+      }
+
+      .examples-heading p {
+        margin: 8px 0 0;
+        color: var(--muted);
+        font-size: 0.82rem;
+        line-height: 1.6;
+      }
+
+      .example-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 16px;
+      }
+
+      .example-card {
+        min-width: 0;
+        overflow: hidden;
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        background: var(--surface);
+      }
+
+      .example-card header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin: 0;
+        padding: 14px 16px;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .example-card h3 {
+        margin: 0;
+        color: var(--primary);
+        font-size: 0.9rem;
+      }
+
+      .example-type {
+        padding: 4px 8px;
+        border-radius: 999px;
+        background: var(--nullable);
+        color: var(--muted);
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 0.65rem;
+        font-weight: 700;
+      }
+
+      pre {
+        min-height: 350px;
+        margin: 0;
+        overflow-x: auto;
+        padding: 16px;
+        background: #172b4d;
+        color: #edf2f7;
+        font-size: 0.72rem;
+        line-height: 1.65;
+        tab-size: 2;
+      }
+
+      pre code {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      }
+
+      .example-note {
+        margin: 12px 16px 16px;
+        color: var(--muted);
+        font-size: 0.72rem;
+        line-height: 1.5;
+      }
+
+      footer {
+        margin-top: 28px;
+        color: var(--muted);
+        font-size: 0.72rem;
+      }
+
+      code {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      }
+
+      @media (max-width: 820px) {
+        main {
+          padding: 40px 0;
+        }
+
+        .schema {
+          grid-template-columns: 1fr;
+        }
+
+        .notes {
+          grid-template-columns: 1fr;
+        }
+
+        .relationship {
+          padding: 4px 24px;
+        }
+
+        .relationship-line {
+          width: 2px;
+          height: 44px;
+          border-top: 0;
+          border-left: 2px solid var(--accent);
+        }
+
+        .example-grid {
+          grid-template-columns: 1fr;
+        }
+
+        pre {
+          min-height: 0;
+        }
+      }
+
+      @media (max-width: 560px) {
+        main {
+          width: min(100% - 20px, 1080px);
+        }
+
+        .notes {
+          grid-template-columns: 1fr;
+        }
+
+        th,
+        td {
+          padding: 11px 12px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <p class="eyebrow">Snap Note · Schema version 5</p>
+        <h1>AppDatabase diagram</h1>
+        <p class="summary">
+          A simple view of the Drift-backed SQLite schema. Primary keys are
+          auto-incremented, and fields marked nullable can be stored without a
+          value.
+        </p>
+      </header>
+
+      <section class="schema" aria-label="Database entities">
+        <article class="entity">
+          <div class="entity-header">
+            <h2>saved_items</h2>
+            <p>Library content</p>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Field</th>
+                <th>Type</th>
+                <th>Rule</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>id</td><td class="type">INTEGER</td><td><span class="badge">PK</span></td></tr>
+              <tr><td>collection_id</td><td class="type">INTEGER</td><td><span class="badge">FK</span></td></tr>
+              <tr><td>type</td><td class="type">TEXT</td><td>Required</td></tr>
+              <tr><td>title</td><td class="type">TEXT</td><td>Required</td></tr>
+              <tr><td>description</td><td class="type">TEXT</td><td><span class="badge optional">Nullable</span></td></tr>
+              <tr><td>markdown</td><td class="type">TEXT</td><td>Note</td></tr>
+              <tr><td>source</td><td class="type">TEXT</td><td><span class="badge optional">Nullable</span></td></tr>
+              <tr><td>url</td><td class="type">TEXT</td><td>Link / video</td></tr>
+              <tr><td>display_time</td><td class="type">TEXT</td><td>Required</td></tr>
+              <tr><td>duration</td><td class="type">TEXT</td><td><span class="badge optional">Nullable</span></td></tr>
+              <tr><td>image_asset</td><td class="type">TEXT</td><td><span class="badge optional">Nullable</span></td></tr>
+              <tr><td>created_at</td><td class="type">DATETIME</td><td>Required</td></tr>
+            </tbody>
+          </table>
+        </article>
+
+        <aside class="relationship" aria-label="Relationship status">
+          <div class="relationship-line" aria-hidden="true"></div>
+          <strong>One-to-many</strong>
+          <span>Each saved item belongs to exactly one collection.</span>
+        </aside>
+
+        <article class="entity">
+          <div class="entity-header">
+            <h2>collections</h2>
+            <p>Collection metadata</p>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Field</th>
+                <th>Type</th>
+                <th>Rule</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>id</td><td class="type">INTEGER</td><td><span class="badge">PK</span></td></tr>
+              <tr><td>title</td><td class="type">TEXT</td><td>Required</td></tr>
+              <tr><td>description</td><td class="type">TEXT</td><td>Required</td></tr>
+              <tr><td>item_count</td><td class="type">INTEGER</td><td>Required</td></tr>
+              <tr><td>color_value</td><td class="type">INTEGER</td><td>ARGB</td></tr>
+              <tr><td>symbol</td><td class="type">TEXT</td><td>Required</td></tr>
+              <tr><td>updated_label</td><td class="type">TEXT</td><td>Required</td></tr>
+              <tr><td>is_pinned</td><td class="type">BOOLEAN</td><td>Default false</td></tr>
+              <tr><td>updated_at</td><td class="type">DATETIME</td><td>Required</td></tr>
+            </tbody>
+          </table>
+        </article>
+      </section>
+
+      <section class="notes" aria-label="Database behavior">
+        <article class="note">
+          <h3>Library ordering</h3>
+          <p><code>saved_items</code> is streamed by <code>createdAt DESC</code>.</p>
+        </article>
+        <article class="note">
+          <h3>Collection ordering</h3>
+          <p>
+            <code>collections</code> is streamed by <code>isPinned DESC</code>,
+            then <code>updatedAt DESC</code>.
+          </p>
+        </article>
+        <article class="note">
+          <h3>URL requirement</h3>
+          <p>
+            <code>link</code> and <code>video</code> rows require
+            <code>url</code>; <code>note</code> rows may store it as
+            <code>NULL</code>.
+          </p>
+        </article>
+        <article class="note">
+          <h3>Markdown requirement</h3>
+          <p>
+            <code>note</code> rows require <code>markdown</code>;
+            <code>link</code> and <code>video</code> rows may store it as
+            <code>NULL</code>.
+          </p>
+        </article>
+      </section>
+
+      <section class="examples" aria-labelledby="examples-title">
+        <div class="examples-heading">
+          <h2 id="examples-title">Saved item examples</h2>
+          <p>
+            Example values passed to Drift when saving each supported item
+            type. Every row includes a required <code>collection_id</code>.
+          </p>
+        </div>
+
+        <div class="example-grid">
+          <article class="example-card">
+            <header>
+              <h3>Written note</h3>
+              <span class="example-type">note</span>
+            </header>
+            <pre><code>{
+  "collection_id": 1,
+  "type": "note",
+  "title": "Make room for deep work",
+  "description": "Protect the first hour.",
+  "markdown": "# Make room for deep work\n\nProtect the first hour. **Make space to think.**",
+  "source": null,
+  "url": null,
+  "display_time": "Today, 9:12",
+  "duration": null,
+  "image_asset": null,
+  "created_at": "2026-11-01T09:12:00"
+}</code></pre>
+            <p class="example-note">
+              Saved in the <strong>Deep work</strong> collection.
+            </p>
+          </article>
+
+          <article class="example-card">
+            <header>
+              <h3>Pocket link</h3>
+              <span class="example-type">link</span>
+            </header>
+            <pre><code>{
+  "collection_id": 3,
+  "type": "link",
+  "title": "A practical guide to deep work",
+  "description": null,
+  "markdown": null,
+  "source": "todoist.com · Yesterday",
+  "url": "https://example.com/articles/deep-work",
+  "display_time": "Yesterday",
+  "duration": "8 MIN",
+  "image_asset": null,
+  "created_at": "2026-10-31T16:30:00"
+}</code></pre>
+            <p class="example-note">
+              Saved in the <strong>Read later</strong> collection.
+            </p>
+          </article>
+
+          <article class="example-card">
+            <header>
+              <h3>Video highlight</h3>
+              <span class="example-type">video</span>
+            </header>
+            <pre><code>{
+  "collection_id": 1,
+  "type": "video",
+  "title": "Build a ritual for focus",
+  "description": null,
+  "markdown": null,
+  "source": "Cal Newport",
+  "url": "https://example.com/videos/focus-ritual",
+  "display_time": "Yesterday",
+  "duration": "12:34",
+  "image_asset": "assets/images/video_still.png",
+  "created_at": "2026-10-31T11:00:00"
+}</code></pre>
+            <p class="example-note">
+              Saved in the <strong>Deep work</strong> collection.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <footer>
+        Source: <code>lib/core/database/app_database.dart</code>
+      </footer>
+    </main>
+  </body>
+</html>

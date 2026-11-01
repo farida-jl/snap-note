@@ -62,6 +62,11 @@ local SQLite storage, and reactive BLoC state management.
 - Drift with SQLite
 - `flutter_svg`
 
+## Documentation
+
+- [AppDatabase schema and ER diagram](docs/database.md)
+- [AppDatabase HTML diagram](docs/database.html)
+
 ## Run locally
 
 ```sh

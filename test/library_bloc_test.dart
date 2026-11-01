@@ -8,8 +8,10 @@ class _FakeLibraryRepository implements LibraryRepository {
   final items = Stream<List<LibraryItem>>.value(const [
     LibraryItem(
       id: 1,
+      collectionId: 1,
       type: LibraryItemType.note,
       title: 'Deep work',
+      markdown: '# Deep work',
       displayTime: 'Today',
     ),
   ]);

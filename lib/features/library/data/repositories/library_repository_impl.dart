@@ -17,10 +17,13 @@ class LibraryRepositoryImpl implements LibraryRepository {
           .map(
             (row) => LibraryItem(
               id: row.id,
+              collectionId: row.collectionId,
               type: LibraryItemType.values.byName(row.type),
               title: row.title,
               description: row.description,
+              markdown: row.markdown,
               source: row.source,
+              url: row.url,
               displayTime: row.displayTime,
               duration: row.duration,
               imageAsset: row.imageAsset,

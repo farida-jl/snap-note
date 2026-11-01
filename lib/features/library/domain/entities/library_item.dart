@@ -33,32 +33,41 @@ enum LibraryItemType {
 class LibraryItem extends Equatable {
   const LibraryItem({
     required this.id,
+    required this.collectionId,
     required this.type,
     required this.title,
     required this.displayTime,
     this.description,
+    this.markdown,
     this.source,
+    this.url,
     this.duration,
     this.imageAsset,
   });
 
   final int id;
+  final int collectionId;
   final LibraryItemType type;
   final String title;
   final String displayTime;
   final String? description;
+  final String? markdown;
   final String? source;
+  final String? url;
   final String? duration;
   final String? imageAsset;
 
   @override
   List<Object?> get props => [
     id,
+    collectionId,
     type,
     title,
     displayTime,
     description,
+    markdown,
     source,
+    url,
     duration,
     imageAsset,
   ];
