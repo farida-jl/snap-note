@@ -5,8 +5,6 @@ class CollectionsLocalDataSource {
 
   final AppDatabase _database;
 
-  Future<void> seed() => _database.seedMockData();
-
   Stream<List<CollectionRow>> watchCollections() =>
       _database.watchCollections();
 }

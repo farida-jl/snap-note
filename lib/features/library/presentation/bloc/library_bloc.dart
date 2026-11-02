@@ -80,7 +80,6 @@ class LibraryBloc extends Bloc<LibraryEvent, LibraryState> {
   ) async {
     emit(state.copyWith(status: LibraryStatus.loading));
     try {
-      await _watchLibrary.initialize();
       await _subscription?.cancel();
       _subscription = _watchLibrary().listen(
         (items) => add(_LibraryItemsChanged(items)),

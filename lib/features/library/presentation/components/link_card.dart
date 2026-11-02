@@ -5,6 +5,7 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../shared/widgets/cards/card_surface.dart';
 import '../../../../shared/widgets/type_badge.dart';
 import '../../domain/entities/library_item.dart';
+import '../utils/relative_time.dart';
 
 class LinkCard extends StatelessWidget {
   const LinkCard({required this.item, super.key});
@@ -20,7 +21,15 @@ class LinkCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                TypeBadge(type: item.type),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    TypeBadge(type: item.type),
+                    Text(formatRelativeTime(item.createdAt),
+                  style: const TextStyle(fontSize: 9, color: AppColors.primary),
+                ),
+                  ],
+                ),
                 const SizedBox(height: 8),
                 CardTitle(item.title),
                 const SizedBox(height: 6),
@@ -30,30 +39,6 @@ class LinkCard extends StatelessWidget {
                     fontSize: 11,
                     color: AppColors.textSecondary,
                   ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 12),
-          Container(
-            width: 54,
-            height: 68,
-            decoration: BoxDecoration(
-              color: AppColors.subtle,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                SvgPicture.asset(
-                  'assets/icons/book_open.svg',
-                  width: 25,
-                  height: 25,
-                ),
-                const SizedBox(height: 5),
-                Text(
-                  item.duration ?? '',
-                  style: const TextStyle(fontSize: 9, color: AppColors.primary),
                 ),
               ],
             ),

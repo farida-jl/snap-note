@@ -8,9 +8,6 @@ class CollectionsRepositoryImpl implements CollectionsRepository {
   final CollectionsLocalDataSource _localDataSource;
 
   @override
-  Future<void> initialize() => _localDataSource.seed();
-
-  @override
   Stream<List<FolioCollection>> watchCollections() {
     return _localDataSource.watchCollections().map(
       (rows) => rows

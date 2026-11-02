@@ -80,7 +80,6 @@ class CollectionsBloc extends Bloc<CollectionsEvent, CollectionsState> {
   ) async {
     emit(state.copyWith(status: CollectionsStatus.loading));
     try {
-      await _watchCollections.initialize();
       await _subscription?.cancel();
       _subscription = _watchCollections().listen(
         (collections) => add(_CollectionsChanged(collections)),

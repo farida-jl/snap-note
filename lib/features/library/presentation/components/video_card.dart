@@ -4,6 +4,7 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../shared/widgets/cards/card_surface.dart';
 import '../../../../shared/widgets/type_badge.dart';
 import '../../domain/entities/library_item.dart';
+import '../utils/relative_time.dart';
 
 class VideoCard extends StatelessWidget {
   const VideoCard({required this.item, super.key});
@@ -32,7 +33,7 @@ class VideoCard extends StatelessWidget {
                     ),
                     const SizedBox(width: 6),
                     Text(
-                      item.duration ?? '',
+                      formatRelativeTime(item.createdAt),
                       style: const TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,

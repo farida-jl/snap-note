@@ -33,10 +33,8 @@ extension AppDatabaseQueries on AppDatabase {
           type: 'link',
           title: title,
           description: Value(description),
-          source: Value('$sourceHost · Just now'),
+          source: Value(sourceHost),
           url: Value(url),
-          displayTime: 'Just now',
-          duration: const Value('8 MIN'),
           createdAt: DateTime.now(),
         ),
       );
@@ -52,5 +50,29 @@ extension AppDatabaseQueries on AppDatabase {
       );
       return id;
     });
+  }
+
+  Future<int> _ensureReadLaterCollection() async {
+    final existing =
+        await (select(collections)
+              ..where((row) => row.title.equals('Read Later'))
+              ..orderBy([(row) => OrderingTerm.asc(row.id)])
+              ..limit(1))
+            .getSingleOrNull();
+
+    if (existing != null) return existing.id;
+
+    return into(collections).insert(
+      CollectionsCompanion.insert(
+        title: 'Read Later',
+        description: 'Links saved for later',
+        itemCount: 0,
+        colorValue: 0xFFE8EEF4,
+        symbol: 'bookmark',
+        updatedLabel: 'No links yet',
+        isPinned: const Value(true),
+        updatedAt: DateTime.now(),
+      ),
+    );
   }
 }

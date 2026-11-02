@@ -6,7 +6,5 @@ class WatchLibrary {
 
   final LibraryRepository _repository;
 
-  Future<void> initialize() => _repository.initialize();
-
   Stream<List<LibraryItem>> call() => _repository.watchRecentItems();
 }

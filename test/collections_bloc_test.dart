@@ -6,9 +6,6 @@ import 'package:snap_note/features/collections/presentation/bloc/collections_blo
 
 class _FakeCollectionsRepository implements CollectionsRepository {
   @override
-  Future<void> initialize() async {}
-
-  @override
   Stream<List<FolioCollection>> watchCollections() => Stream.value(const [
     FolioCollection(
       id: 1,

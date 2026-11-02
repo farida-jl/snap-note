@@ -16,11 +16,8 @@ import 'package:snap_note/features/pocket_link/domain/repositories/pocket_link_r
 
 class _WidgetLibraryRepository implements LibraryRepository {
   @override
-  Future<void> initialize() async {}
-
-  @override
   Stream<List<LibraryItem>>
-  watchRecentItems() => Stream<List<LibraryItem>>.value(const [
+  watchRecentItems() => Stream<List<LibraryItem>>.value([
     LibraryItem(
       id: 1,
       collectionId: 1,
@@ -29,7 +26,7 @@ class _WidgetLibraryRepository implements LibraryRepository {
       description: 'Protect the first hour. Make space to think.',
       markdown:
           '# Make room for deep work\n\nProtect the first hour. **Make space to think.**',
-      displayTime: 'Today, 9:12',
+      createdAt: DateTime(2026, 11, 2, 9, 12),
     ),
     LibraryItem(
       id: 2,
@@ -38,8 +35,7 @@ class _WidgetLibraryRepository implements LibraryRepository {
       title: 'A practical guide to deep work',
       source: 'todoist.com · Yesterday',
       url: 'https://example.com/articles/deep-work',
-      displayTime: 'Yesterday',
-      duration: '8 MIN',
+      createdAt: DateTime(2026, 11, 1, 16, 30),
     ),
     LibraryItem(
       id: 3,
@@ -48,17 +44,13 @@ class _WidgetLibraryRepository implements LibraryRepository {
       title: 'Build a ritual for focus',
       source: 'Cal Newport',
       url: 'https://example.com/videos/focus-ritual',
-      displayTime: 'Yesterday',
-      duration: '12:34',
+      createdAt: DateTime(2026, 11, 1, 11),
       imageAsset: 'assets/images/video_still.png',
     ),
   ]);
 }
 
 class _WidgetCollectionsRepository implements CollectionsRepository {
-  @override
-  Future<void> initialize() async {}
-
   @override
   Stream<List<FolioCollection>> watchCollections() => Stream.value(const [
     FolioCollection(
@@ -121,7 +113,7 @@ void main() {
     final barrier = tester.widget<ModalBarrier>(
       find.byKey(const ValueKey('capture-menu-content-barrier')),
     );
-    expect(barrier.color, const Color(0xB3000000));
+    expect(barrier.color, const Color(0xC218354A));
 
     await tester.tap(
       find.byKey(const ValueKey('capture-menu-content-barrier')),

@@ -6,17 +6,17 @@ enum LibraryItemType {
   note(
     label: 'NOTE',
     icon: 'assets/icons/file_text.svg',
-    badgeColor: Color(0xFFF0F2F4),
+    badgeColor: Color(0xFFEAF2ED),
   ),
   link(
     label: 'POCKET LINK',
     icon: 'assets/icons/link.svg',
-    badgeColor: Color(0xFFF0F2F4),
+    badgeColor: Color(0xFFFFE9B4),
   ),
   video(
     label: 'VIDEO MOMENT',
     icon: 'assets/icons/clapperboard.svg',
-    badgeColor: Color(0xFFF0F2F4),
+    badgeColor: Color(0xFFE7EDF2),
   );
 
   const LibraryItemType({
@@ -36,12 +36,11 @@ class LibraryItem extends Equatable {
     required this.collectionId,
     required this.type,
     required this.title,
-    required this.displayTime,
+    required this.createdAt,
     this.description,
     this.markdown,
     this.source,
     this.url,
-    this.duration,
     this.imageAsset,
   });
 
@@ -49,12 +48,11 @@ class LibraryItem extends Equatable {
   final int collectionId;
   final LibraryItemType type;
   final String title;
-  final String displayTime;
+  final DateTime createdAt;
   final String? description;
   final String? markdown;
   final String? source;
   final String? url;
-  final String? duration;
   final String? imageAsset;
 
   @override
@@ -63,12 +61,11 @@ class LibraryItem extends Equatable {
     collectionId,
     type,
     title,
-    displayTime,
+    createdAt,
     description,
     markdown,
     source,
     url,
-    duration,
     imageAsset,
   ];
 }

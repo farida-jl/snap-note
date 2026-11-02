@@ -75,7 +75,7 @@ class _PocketLinkPageState extends State<PocketLinkPage> {
                           hintText: 'https://example.com/article',
                           controller: _urlController,
                           keyboardType: TextInputType.url,
-                          maxLines: 2,
+                          maxLines: 4,
                           minLines: 1,
                           prefixIcon: 'assets/icons/link.svg',
                           onChanged: (value) => context
@@ -83,10 +83,6 @@ class _PocketLinkPageState extends State<PocketLinkPage> {
                               .add(PocketLinkUrlChanged(value)),
                         ),
                         const SizedBox(height: 22),
-                        if (state.uri != null) ...[
-                          _FetchedPreview(host: state.sourceHost),
-                          const SizedBox(height: 22),
-                        ],
                         _LabeledField(
                           fieldKey: const ValueKey('pocket-link-title-field'),
                           label: 'Title',
@@ -268,70 +264,6 @@ class _LabeledField extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-}
-
-class _FetchedPreview extends StatelessWidget {
-  const _FetchedPreview({required this.host});
-
-  final String host;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: AppColors.subtle,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 40,
-            height: 46,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              color: AppColors.card,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: SvgPicture.asset(
-              'assets/icons/book_open.svg',
-              width: 23,
-              height: 23,
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  host,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.primary,
-                  ),
-                ),
-                const SizedBox(height: 5),
-                const Text(
-                  'Article · 8 min read',
-                  style: TextStyle(fontSize: 11, color: AppColors.primary),
-                ),
-              ],
-            ),
-          ),
-          SvgPicture.asset(
-            'assets/icons/pocket_link_valid.svg',
-            width: 18,
-            height: 18,
-          ),
-        ],
-      ),
     );
   }
 }

@@ -5,7 +5,5 @@ class LibraryLocalDataSource {
 
   final AppDatabase _database;
 
-  Future<void> seed() => _database.seedMockData();
-
   Stream<List<SavedItem>> watchRecentItems() => _database.watchRecentItems();
 }

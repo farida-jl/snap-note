@@ -64,6 +64,7 @@ class _HomePageState extends State<HomePage> {
             ),
         ],
       ),
+      floatingActionButtonAnimator: FloatingActionButtonAnimator.noAnimation,
       floatingActionButton: _selectedIndex == 0
           ? CaptureSpeedDial(
               isExpanded: _isCaptureMenuExpanded,
@@ -144,7 +145,7 @@ class _BottomNavigation extends StatelessWidget {
       minimum: const EdgeInsets.fromLTRB(16, 0, 16, 12),
       child: DecoratedBox(
         decoration: BoxDecoration(
-          color: AppColors.white,
+          color: AppColors.primary,
           boxShadow: [
             BoxShadow(
               color: AppColors.textPrimary.withValues(alpha: 0.1),
@@ -162,6 +163,7 @@ class _BottomNavigation extends StatelessWidget {
             children: [
               for (var index = 0; index < destinations.length; index++)
                 _buildNavigationItem(
+                  context: context,
                   destination: destinations[index],
                   index: index,
                 ),
@@ -173,26 +175,30 @@ class _BottomNavigation extends StatelessWidget {
   }
 
   Widget _buildNavigationItem({
+    required BuildContext context,
     required _HomeDestination destination,
     required int index,
   }) {
     final isSelected = index == selectedIndex;
+    final reduceMotion = MediaQuery.disableAnimationsOf(context);
 
     return Semantics(
       selected: isSelected,
       button: true,
       label: destination.label,
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(18),
         onTap: () => onSelected(index),
         child: TweenAnimationBuilder<double>(
           tween: Tween(end: isSelected ? 1 : 0),
-          duration: const Duration(milliseconds: 240),
+          duration: reduceMotion
+              ? Duration.zero
+              : const Duration(milliseconds: 240),
           curve: Curves.easeOutCubic,
           builder: (context, progress, child) {
             final itemColor = Color.lerp(
-              AppColors.textSecondary,
-              AppColors.primary,
+              AppColors.white,
+              AppColors.accent,
               progress,
             )!;
 
@@ -206,9 +212,9 @@ class _BottomNavigation extends StatelessWidget {
                     alignment: Alignment.topCenter,
                     child: Container(
                       width: 30 * progress,
-                      height: 3,
+                      height: 6,
                       decoration: BoxDecoration(
-                        color: AppColors.primary.withValues(alpha: progress),
+                        color: AppColors.accent.withValues(alpha: progress),
                         borderRadius: const BorderRadius.vertical(
                           bottom: Radius.circular(3),
                         ),
@@ -216,7 +222,7 @@ class _BottomNavigation extends StatelessWidget {
                     ),
                   ),
                   Transform.translate(
-                    offset: Offset(0, -1.5 * progress),
+                    offset: Offset(0, 1.5 * progress),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -239,7 +245,7 @@ class _BottomNavigation extends StatelessWidget {
                             fontSize: 10,
                             height: 1.2,
                             fontWeight: FontWeight.lerp(
-                              FontWeight.w400,
+                              FontWeight.w500,
                               FontWeight.w700,
                               progress,
                             ),

@@ -9,8 +9,39 @@ import '../components/link_card.dart';
 import '../components/note_card.dart';
 import '../components/video_card.dart';
 
-class LibraryPage extends StatelessWidget {
+class LibraryPage extends StatefulWidget {
   const LibraryPage({super.key});
+
+  @override
+  State<LibraryPage> createState() => _LibraryPageState();
+}
+
+class _LibraryPageState extends State<LibraryPage>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _entranceController = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 720),
+  );
+  bool _entranceStarted = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_entranceStarted) return;
+    _entranceStarted = true;
+
+    if (MediaQuery.disableAnimationsOf(context)) {
+      _entranceController.value = 1;
+    } else {
+      _entranceController.forward();
+    }
+  }
+
+  @override
+  void dispose() {
+    _entranceController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -19,40 +50,42 @@ class LibraryPage extends StatelessWidget {
       child: BlocBuilder<LibraryBloc, LibraryState>(
         builder: (context, state) {
           return CustomScrollView(
+            key: const PageStorageKey('library-scroll'),
             physics: const BouncingScrollPhysics(),
             slivers: [
+              SliverToBoxAdapter(
+                child: _EntranceReveal(
+                  controller: _entranceController,
+                  interval: const Interval(0, .58, curve: Curves.easeOutCubic),
+                  distance: 16,
+                  child: const _HomeHeader(),
+                ),
+              ),
               SliverPadding(
-                padding: const EdgeInsets.fromLTRB(24, 8, 24, 112),
+                padding: const EdgeInsets.fromLTRB(20, 24, 20, 124),
                 sliver: SliverList.list(
                   children: [
-                    const _BrandBar(),
-                    const SizedBox(height: 20),
-                    const _Introduction(),
-                    const SizedBox(height: 18),
-                    const _SearchField(),
-                    const SizedBox(height: 18),
-                    const _SectionHeader(),
-                    const SizedBox(height: 12),
-                    if (state.status == LibraryStatus.failure)
-                      _ErrorMessage(message: state.message)
-                    else if (state.status != LibraryStatus.success)
-                      const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 80),
-                        child: Center(child: CircularProgressIndicator()),
-                      )
-                    else ...[
-                      for (
-                        var index = 0;
-                        index < state.items.length;
-                        index++
-                      ) ...[
-                        _LibraryCard(item: state.items[index]),
-                        if (index != state.items.length - 1)
-                          const SizedBox(height: 12),
-                      ],
-                      const SizedBox(height: 18),
-                      const _Reassurance(),
-                    ],
+                    _EntranceReveal(
+                      controller: _entranceController,
+                      interval: const Interval(
+                        .24,
+                        .76,
+                        curve: Curves.easeOutCubic,
+                      ),
+                      distance: 12,
+                      child: const _SectionHeader(),
+                    ),
+                    const SizedBox(height: 14),
+                    _EntranceReveal(
+                      controller: _entranceController,
+                      interval: const Interval(
+                        .38,
+                        1,
+                        curve: Curves.easeOutCubic,
+                      ),
+                      distance: 18,
+                      child: _LibraryStateContent(state: state),
+                    ),
                   ],
                 ),
               ),
@@ -64,62 +97,158 @@ class LibraryPage extends StatelessWidget {
   }
 }
 
-class _BrandBar extends StatelessWidget {
-  const _BrandBar();
+class _EntranceReveal extends StatelessWidget {
+  const _EntranceReveal({
+    required this.controller,
+    required this.interval,
+    required this.child,
+    required this.distance,
+  });
+
+  final AnimationController controller;
+  final Interval interval;
+  final Widget child;
+  final double distance;
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 38,
-      child: Row(
-        children: [
-          SvgPicture.asset('assets/icons/asterisk.svg', width: 26, height: 26),
-          const SizedBox(width: 8),
-          const Text(
-            'Snap Note',
-            style: TextStyle(
-              fontFamily: 'Lora',
-              fontSize: 28,
-              height: 1,
-              letterSpacing: -1,
-              color: AppColors.primary,
-            ),
-          ),
-          const Spacer(),
-        ],
+    final animation = CurvedAnimation(parent: controller, curve: interval);
+    return FadeTransition(
+      opacity: animation,
+      child: SlideTransition(
+        position: Tween<Offset>(
+          begin: Offset(0, distance / 100),
+          end: Offset.zero,
+        ).animate(animation),
+        child: child,
       ),
     );
   }
 }
 
-class _Introduction extends StatelessWidget {
-  const _Introduction();
+class _HomeHeader extends StatelessWidget {
+  const _HomeHeader();
 
   @override
   Widget build(BuildContext context) {
-    return const Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return DecoratedBox(
+      decoration: const BoxDecoration(
+        color: AppColors.canvas,
+        borderRadius: BorderRadius.vertical(bottom: Radius.circular(34)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(22, 12, 22, 28),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const _BrandBar(),
+            const SizedBox(height: 30),
+            Text(
+              'Room for ideas.',
+              style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+                color: AppColors.canvasText,
+                fontSize: 40,
+              ),
+            ),
+            const SizedBox(height: 10),
+            const Wrap(
+              spacing: 8,
+              runSpacing: 4,
+              children: [
+                Text('72 notes', style: _metricStyle),
+                Text('·', style: _metricStyle),
+                Text('38 links', style: _metricStyle),
+                Text('·', style: _metricStyle),
+                Text('18 video moments', style: _metricStyle),
+              ],
+            ),
+            const SizedBox(height: 24),
+            const _SearchField(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  static const _metricStyle = TextStyle(
+    fontSize: 12,
+    height: 1.3,
+    color: AppColors.canvasMuted,
+  );
+}
+
+class _BrandBar extends StatelessWidget {
+  const _BrandBar();
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
       children: [
-        Text(
-          'Room for ideas.',
-          style: TextStyle(
-            fontFamily: 'Lora',
-            fontSize: 32,
-            height: 1.2,
-            letterSpacing: -1,
-            color: AppColors.primary,
+        DecoratedBox(
+          decoration: const BoxDecoration(
+            color: AppColors.accent,
+            shape: BoxShape.circle,
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(7),
+            child: SvgPicture.asset(
+              'assets/icons/asterisk.svg',
+              width: 15,
+              height: 15,
+              colorFilter: const ColorFilter.mode(
+                AppColors.canvas,
+                BlendMode.srcIn,
+              ),
+            ),
           ),
         ),
-        SizedBox(height: 9),
-        Text(
-          '72 notes   ·   38 links   ·   18 video moments',
+        const SizedBox(width: 10),
+        const Text(
+          'SNAP NOTE',
           style: TextStyle(
             fontSize: 12,
-            height: 1.2,
-            color: AppColors.textSecondary,
+            height: 1,
+            letterSpacing: 1.8,
+            fontWeight: FontWeight.w800,
+            color: AppColors.canvasText,
           ),
         ),
+        const Spacer(),
+        const _SyncStatus(),
       ],
+    );
+  }
+}
+
+class _SyncStatus extends StatelessWidget {
+  const _SyncStatus();
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      label: 'Ideas synced',
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+        decoration: BoxDecoration(
+          border: Border.all(color: const Color(0xFF426071)),
+          borderRadius: BorderRadius.circular(99),
+        ),
+        child: const Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.cloud_done_outlined, size: 14, color: AppColors.accent),
+            SizedBox(width: 5),
+            Text(
+              'Synced',
+              style: TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.w600,
+                color: AppColors.canvasMuted,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -129,45 +258,42 @@ class _SearchField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 56,
-      child: TextField(
-        style: const TextStyle(fontSize: 15, color: AppColors.textPrimary),
-        decoration: InputDecoration(
-          hintText: 'Search everything you saved',
-          hintStyle: const TextStyle(
-            fontSize: 15,
-            color: AppColors.textSecondary,
+    return TextField(
+      style: const TextStyle(fontSize: 15, color: AppColors.textPrimary),
+      decoration: InputDecoration(
+        hintText: 'Find an idea, link, or moment',
+        hintStyle: const TextStyle(
+          fontSize: 14,
+          color: AppColors.textSecondary,
+        ),
+        prefixIcon: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 15, 11, 15),
+          child: SvgPicture.asset(
+            'assets/icons/search.svg',
+            width: 20,
+            height: 20,
           ),
-          prefixIcon: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 18, 12, 18),
-            child: SvgPicture.asset(
-              'assets/icons/search.svg',
-              width: 20,
-              height: 20,
+        ),
+        suffixIcon: const Padding(
+          padding: EdgeInsets.only(right: 12),
+          child: Center(
+            widthFactor: 1,
+            child: Text(
+              '⌕',
+              style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
             ),
           ),
-          suffixIcon: const Padding(
-            padding: EdgeInsets.only(right: 14),
-            child: Center(
-              widthFactor: 1,
-              child: Text(
-                '⌕',
-                style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
-              ),
-            ),
-          ),
-          filled: true,
-          fillColor: AppColors.card,
-          contentPadding: EdgeInsets.zero,
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: AppColors.border),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: AppColors.primary),
-          ),
+        ),
+        filled: true,
+        fillColor: AppColors.canvasText,
+        contentPadding: const EdgeInsets.symmetric(vertical: 17),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide.none,
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(color: AppColors.accent, width: 2),
         ),
       ),
     );
@@ -181,26 +307,62 @@ class _SectionHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        const Expanded(
-          child: Text(
-            'Recently saved',
-            style: TextStyle(
-              fontSize: 15,
-              fontWeight: FontWeight.w600,
-              color: AppColors.primary,
-            ),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Recently saved',
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+              const SizedBox(height: 3),
+              const Text(
+                'Your newest thoughts, ready when you are.',
+                style: TextStyle(fontSize: 11, color: AppColors.textSecondary),
+              ),
+            ],
           ),
         ),
-        Row(
-          children: [
-            const Text(
-              'Newest first',
-              style: TextStyle(fontSize: 11, color: AppColors.textSecondary),
-            ),
-            const SizedBox(width: 5),
-            SvgPicture.asset('assets/icons/sort.svg', width: 15, height: 15),
-          ],
+        TextButton.icon(
+          onPressed: () {},
+          style: TextButton.styleFrom(
+            foregroundColor: AppColors.primary,
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+          ),
+          iconAlignment: IconAlignment.end,
+          icon: SvgPicture.asset(
+            'assets/icons/sort.svg',
+            width: 15,
+            height: 15,
+          ),
+          label: const Text('Newest', style: TextStyle(fontSize: 11)),
         ),
+      ],
+    );
+  }
+}
+
+class _LibraryStateContent extends StatelessWidget {
+  const _LibraryStateContent({required this.state});
+
+  final LibraryState state;
+
+  @override
+  Widget build(BuildContext context) {
+    if (state.status == LibraryStatus.failure) {
+      return _ErrorMessage(message: state.message);
+    }
+    if (state.status != LibraryStatus.success) return const _LoadingLibrary();
+    if (state.items.isEmpty) return const _EmptyLibrary();
+
+    return Column(
+      children: [
+        for (var index = 0; index < state.items.length; index++) ...[
+          _LibraryCard(item: state.items[index]),
+          if (index != state.items.length - 1) const SizedBox(height: 10),
+        ],
+        const SizedBox(height: 22),
+        const _Reassurance(),
       ],
     );
   }
@@ -221,17 +383,84 @@ class _LibraryCard extends StatelessWidget {
   }
 }
 
+class _LoadingLibrary extends StatelessWidget {
+  const _LoadingLibrary();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Padding(
+      padding: EdgeInsets.symmetric(vertical: 72),
+      child: Center(
+        child: Column(
+          children: [
+            CircularProgressIndicator(strokeWidth: 3),
+            SizedBox(height: 14),
+            Text(
+              'Gathering your ideas…',
+              style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _EmptyLibrary extends StatelessWidget {
+  const _EmptyLibrary();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(24, 32, 24, 30),
+      decoration: BoxDecoration(
+        color: AppColors.card,
+        borderRadius: BorderRadius.circular(24),
+      ),
+      child: const Column(
+        children: [
+          Icon(
+            Icons.lightbulb_outline_rounded,
+            size: 34,
+            color: AppColors.accent,
+          ),
+          SizedBox(height: 14),
+          Text(
+            'Your first idea starts here.',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontFamily: 'Lora',
+              fontSize: 20,
+              color: AppColors.textPrimary,
+            ),
+          ),
+          SizedBox(height: 7),
+          Text(
+            'Use the Capture button to save a note, link, or video moment.',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 12,
+              height: 1.5,
+              color: AppColors.textSecondary,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _Reassurance extends StatelessWidget {
   const _Reassurance();
 
   @override
   Widget build(BuildContext context) {
-    return Row(
+    return const Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        SvgPicture.asset('assets/icons/cloud_check.svg', width: 13, height: 13),
-        const SizedBox(width: 6),
-        const Flexible(
+        Icon(Icons.lock_outline_rounded, size: 13, color: AppColors.success),
+        SizedBox(width: 6),
+        Flexible(
           child: Text(
             'All your ideas, safely in one place.',
             overflow: TextOverflow.ellipsis,
@@ -250,12 +479,32 @@ class _ErrorMessage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 48),
-      child: Text(
-        message ?? 'Could not load your library.',
-        textAlign: TextAlign.center,
-        style: const TextStyle(color: AppColors.textSecondary),
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: AppColors.card,
+        borderRadius: BorderRadius.circular(24),
+      ),
+      child: Column(
+        children: [
+          const Icon(
+            Icons.cloud_off_outlined,
+            size: 32,
+            color: AppColors.textSecondary,
+          ),
+          const SizedBox(height: 12),
+          Text(
+            message ?? 'Your library could not be loaded.',
+            textAlign: TextAlign.center,
+            style: const TextStyle(color: AppColors.textSecondary),
+          ),
+          const SizedBox(height: 12),
+          FilledButton.tonal(
+            onPressed: () =>
+                context.read<LibraryBloc>().add(const LibraryStarted()),
+            child: const Text('Try again'),
+          ),
+        ],
       ),
     );
   }

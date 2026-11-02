@@ -11,8 +11,6 @@ class SavedItems extends Table {
   TextColumn get markdown => text().nullable()();
   TextColumn get source => text().nullable()();
   TextColumn get url => text().nullable()();
-  TextColumn get displayTime => text()();
-  TextColumn get duration => text().nullable()();
   TextColumn get imageAsset => text().nullable()();
   DateTimeColumn get createdAt => dateTime()();
 

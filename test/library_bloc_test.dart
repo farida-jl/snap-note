@@ -5,19 +5,16 @@ import 'package:snap_note/features/library/domain/usecases/watch_library.dart';
 import 'package:snap_note/features/library/presentation/bloc/library_bloc.dart';
 
 class _FakeLibraryRepository implements LibraryRepository {
-  final items = Stream<List<LibraryItem>>.value(const [
+  final items = Stream<List<LibraryItem>>.value([
     LibraryItem(
       id: 1,
       collectionId: 1,
       type: LibraryItemType.note,
       title: 'Deep work',
       markdown: '# Deep work',
-      displayTime: 'Today',
+      createdAt: DateTime(2026, 11, 2),
     ),
   ]);
-
-  @override
-  Future<void> initialize() async {}
 
   @override
   Stream<List<LibraryItem>> watchRecentItems() => items;

@@ -10,11 +10,18 @@ class CardSurface extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(15),
+      padding: const EdgeInsets.all(17),
       decoration: BoxDecoration(
         color: AppColors.card,
-        border: Border.all(color: AppColors.border),
-        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: AppColors.white),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x0D173042),
+            blurRadius: 18,
+            offset: Offset(0, 6),
+          ),
+        ],
       ),
       child: child,
     );

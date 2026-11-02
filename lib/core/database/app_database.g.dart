@@ -653,28 +653,6 @@ class $SavedItemsTable extends SavedItems
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
-  static const VerificationMeta _displayTimeMeta = const VerificationMeta(
-    'displayTime',
-  );
-  @override
-  late final GeneratedColumn<String> displayTime = GeneratedColumn<String>(
-    'display_time',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _durationMeta = const VerificationMeta(
-    'duration',
-  );
-  @override
-  late final GeneratedColumn<String> duration = GeneratedColumn<String>(
-    'duration',
-    aliasedName,
-    true,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-  );
   static const VerificationMeta _imageAssetMeta = const VerificationMeta(
     'imageAsset',
   );
@@ -707,8 +685,6 @@ class $SavedItemsTable extends SavedItems
     markdown,
     source,
     url,
-    displayTime,
-    duration,
     imageAsset,
     createdAt,
   ];
@@ -781,23 +757,6 @@ class $SavedItemsTable extends SavedItems
         url.isAcceptableOrUnknown(data['url']!, _urlMeta),
       );
     }
-    if (data.containsKey('display_time')) {
-      context.handle(
-        _displayTimeMeta,
-        displayTime.isAcceptableOrUnknown(
-          data['display_time']!,
-          _displayTimeMeta,
-        ),
-      );
-    } else if (isInserting) {
-      context.missing(_displayTimeMeta);
-    }
-    if (data.containsKey('duration')) {
-      context.handle(
-        _durationMeta,
-        duration.isAcceptableOrUnknown(data['duration']!, _durationMeta),
-      );
-    }
     if (data.containsKey('image_asset')) {
       context.handle(
         _imageAssetMeta,
@@ -853,14 +812,6 @@ class $SavedItemsTable extends SavedItems
         DriftSqlType.string,
         data['${effectivePrefix}url'],
       ),
-      displayTime: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}display_time'],
-      )!,
-      duration: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}duration'],
-      ),
       imageAsset: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}image_asset'],
@@ -887,8 +838,6 @@ class SavedItem extends DataClass implements Insertable<SavedItem> {
   final String? markdown;
   final String? source;
   final String? url;
-  final String displayTime;
-  final String? duration;
   final String? imageAsset;
   final DateTime createdAt;
   const SavedItem({
@@ -900,8 +849,6 @@ class SavedItem extends DataClass implements Insertable<SavedItem> {
     this.markdown,
     this.source,
     this.url,
-    required this.displayTime,
-    this.duration,
     this.imageAsset,
     required this.createdAt,
   });
@@ -923,10 +870,6 @@ class SavedItem extends DataClass implements Insertable<SavedItem> {
     }
     if (!nullToAbsent || url != null) {
       map['url'] = Variable<String>(url);
-    }
-    map['display_time'] = Variable<String>(displayTime);
-    if (!nullToAbsent || duration != null) {
-      map['duration'] = Variable<String>(duration);
     }
     if (!nullToAbsent || imageAsset != null) {
       map['image_asset'] = Variable<String>(imageAsset);
@@ -951,10 +894,6 @@ class SavedItem extends DataClass implements Insertable<SavedItem> {
           ? const Value.absent()
           : Value(source),
       url: url == null && nullToAbsent ? const Value.absent() : Value(url),
-      displayTime: Value(displayTime),
-      duration: duration == null && nullToAbsent
-          ? const Value.absent()
-          : Value(duration),
       imageAsset: imageAsset == null && nullToAbsent
           ? const Value.absent()
           : Value(imageAsset),
@@ -976,8 +915,6 @@ class SavedItem extends DataClass implements Insertable<SavedItem> {
       markdown: serializer.fromJson<String?>(json['markdown']),
       source: serializer.fromJson<String?>(json['source']),
       url: serializer.fromJson<String?>(json['url']),
-      displayTime: serializer.fromJson<String>(json['displayTime']),
-      duration: serializer.fromJson<String?>(json['duration']),
       imageAsset: serializer.fromJson<String?>(json['imageAsset']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
     );
@@ -994,8 +931,6 @@ class SavedItem extends DataClass implements Insertable<SavedItem> {
       'markdown': serializer.toJson<String?>(markdown),
       'source': serializer.toJson<String?>(source),
       'url': serializer.toJson<String?>(url),
-      'displayTime': serializer.toJson<String>(displayTime),
-      'duration': serializer.toJson<String?>(duration),
       'imageAsset': serializer.toJson<String?>(imageAsset),
       'createdAt': serializer.toJson<DateTime>(createdAt),
     };
@@ -1010,8 +945,6 @@ class SavedItem extends DataClass implements Insertable<SavedItem> {
     Value<String?> markdown = const Value.absent(),
     Value<String?> source = const Value.absent(),
     Value<String?> url = const Value.absent(),
-    String? displayTime,
-    Value<String?> duration = const Value.absent(),
     Value<String?> imageAsset = const Value.absent(),
     DateTime? createdAt,
   }) => SavedItem(
@@ -1023,8 +956,6 @@ class SavedItem extends DataClass implements Insertable<SavedItem> {
     markdown: markdown.present ? markdown.value : this.markdown,
     source: source.present ? source.value : this.source,
     url: url.present ? url.value : this.url,
-    displayTime: displayTime ?? this.displayTime,
-    duration: duration.present ? duration.value : this.duration,
     imageAsset: imageAsset.present ? imageAsset.value : this.imageAsset,
     createdAt: createdAt ?? this.createdAt,
   );
@@ -1042,10 +973,6 @@ class SavedItem extends DataClass implements Insertable<SavedItem> {
       markdown: data.markdown.present ? data.markdown.value : this.markdown,
       source: data.source.present ? data.source.value : this.source,
       url: data.url.present ? data.url.value : this.url,
-      displayTime: data.displayTime.present
-          ? data.displayTime.value
-          : this.displayTime,
-      duration: data.duration.present ? data.duration.value : this.duration,
       imageAsset: data.imageAsset.present
           ? data.imageAsset.value
           : this.imageAsset,
@@ -1064,8 +991,6 @@ class SavedItem extends DataClass implements Insertable<SavedItem> {
           ..write('markdown: $markdown, ')
           ..write('source: $source, ')
           ..write('url: $url, ')
-          ..write('displayTime: $displayTime, ')
-          ..write('duration: $duration, ')
           ..write('imageAsset: $imageAsset, ')
           ..write('createdAt: $createdAt')
           ..write(')'))
@@ -1082,8 +1007,6 @@ class SavedItem extends DataClass implements Insertable<SavedItem> {
     markdown,
     source,
     url,
-    displayTime,
-    duration,
     imageAsset,
     createdAt,
   );
@@ -1099,8 +1022,6 @@ class SavedItem extends DataClass implements Insertable<SavedItem> {
           other.markdown == this.markdown &&
           other.source == this.source &&
           other.url == this.url &&
-          other.displayTime == this.displayTime &&
-          other.duration == this.duration &&
           other.imageAsset == this.imageAsset &&
           other.createdAt == this.createdAt);
 }
@@ -1114,8 +1035,6 @@ class SavedItemsCompanion extends UpdateCompanion<SavedItem> {
   final Value<String?> markdown;
   final Value<String?> source;
   final Value<String?> url;
-  final Value<String> displayTime;
-  final Value<String?> duration;
   final Value<String?> imageAsset;
   final Value<DateTime> createdAt;
   const SavedItemsCompanion({
@@ -1127,8 +1046,6 @@ class SavedItemsCompanion extends UpdateCompanion<SavedItem> {
     this.markdown = const Value.absent(),
     this.source = const Value.absent(),
     this.url = const Value.absent(),
-    this.displayTime = const Value.absent(),
-    this.duration = const Value.absent(),
     this.imageAsset = const Value.absent(),
     this.createdAt = const Value.absent(),
   });
@@ -1141,14 +1058,11 @@ class SavedItemsCompanion extends UpdateCompanion<SavedItem> {
     this.markdown = const Value.absent(),
     this.source = const Value.absent(),
     this.url = const Value.absent(),
-    required String displayTime,
-    this.duration = const Value.absent(),
     this.imageAsset = const Value.absent(),
     required DateTime createdAt,
   }) : collectionId = Value(collectionId),
        type = Value(type),
        title = Value(title),
-       displayTime = Value(displayTime),
        createdAt = Value(createdAt);
   static Insertable<SavedItem> custom({
     Expression<int>? id,
@@ -1159,8 +1073,6 @@ class SavedItemsCompanion extends UpdateCompanion<SavedItem> {
     Expression<String>? markdown,
     Expression<String>? source,
     Expression<String>? url,
-    Expression<String>? displayTime,
-    Expression<String>? duration,
     Expression<String>? imageAsset,
     Expression<DateTime>? createdAt,
   }) {
@@ -1173,8 +1085,6 @@ class SavedItemsCompanion extends UpdateCompanion<SavedItem> {
       if (markdown != null) 'markdown': markdown,
       if (source != null) 'source': source,
       if (url != null) 'url': url,
-      if (displayTime != null) 'display_time': displayTime,
-      if (duration != null) 'duration': duration,
       if (imageAsset != null) 'image_asset': imageAsset,
       if (createdAt != null) 'created_at': createdAt,
     });
@@ -1189,8 +1099,6 @@ class SavedItemsCompanion extends UpdateCompanion<SavedItem> {
     Value<String?>? markdown,
     Value<String?>? source,
     Value<String?>? url,
-    Value<String>? displayTime,
-    Value<String?>? duration,
     Value<String?>? imageAsset,
     Value<DateTime>? createdAt,
   }) {
@@ -1203,8 +1111,6 @@ class SavedItemsCompanion extends UpdateCompanion<SavedItem> {
       markdown: markdown ?? this.markdown,
       source: source ?? this.source,
       url: url ?? this.url,
-      displayTime: displayTime ?? this.displayTime,
-      duration: duration ?? this.duration,
       imageAsset: imageAsset ?? this.imageAsset,
       createdAt: createdAt ?? this.createdAt,
     );
@@ -1237,12 +1143,6 @@ class SavedItemsCompanion extends UpdateCompanion<SavedItem> {
     if (url.present) {
       map['url'] = Variable<String>(url.value);
     }
-    if (displayTime.present) {
-      map['display_time'] = Variable<String>(displayTime.value);
-    }
-    if (duration.present) {
-      map['duration'] = Variable<String>(duration.value);
-    }
     if (imageAsset.present) {
       map['image_asset'] = Variable<String>(imageAsset.value);
     }
@@ -1263,8 +1163,6 @@ class SavedItemsCompanion extends UpdateCompanion<SavedItem> {
           ..write('markdown: $markdown, ')
           ..write('source: $source, ')
           ..write('url: $url, ')
-          ..write('displayTime: $displayTime, ')
-          ..write('duration: $duration, ')
           ..write('imageAsset: $imageAsset, ')
           ..write('createdAt: $createdAt')
           ..write(')'))
@@ -1676,8 +1574,6 @@ typedef $$SavedItemsTableCreateCompanionBuilder =
       Value<String?> markdown,
       Value<String?> source,
       Value<String?> url,
-      required String displayTime,
-      Value<String?> duration,
       Value<String?> imageAsset,
       required DateTime createdAt,
     });
@@ -1691,8 +1587,6 @@ typedef $$SavedItemsTableUpdateCompanionBuilder =
       Value<String?> markdown,
       Value<String?> source,
       Value<String?> url,
-      Value<String> displayTime,
-      Value<String?> duration,
       Value<String?> imageAsset,
       Value<DateTime> createdAt,
     });
@@ -1762,16 +1656,6 @@ class $$SavedItemsTableFilterComposer
 
   ColumnFilters<String> get url => $composableBuilder(
     column: $table.url,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get displayTime => $composableBuilder(
-    column: $table.displayTime,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get duration => $composableBuilder(
-    column: $table.duration,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -1853,16 +1737,6 @@ class $$SavedItemsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<String> get displayTime => $composableBuilder(
-    column: $table.displayTime,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get duration => $composableBuilder(
-    column: $table.duration,
-    builder: (column) => ColumnOrderings(column),
-  );
-
   ColumnOrderings<String> get imageAsset => $composableBuilder(
     column: $table.imageAsset,
     builder: (column) => ColumnOrderings(column),
@@ -1928,14 +1802,6 @@ class $$SavedItemsTableAnnotationComposer
 
   GeneratedColumn<String> get url =>
       $composableBuilder(column: $table.url, builder: (column) => column);
-
-  GeneratedColumn<String> get displayTime => $composableBuilder(
-    column: $table.displayTime,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<String> get duration =>
-      $composableBuilder(column: $table.duration, builder: (column) => column);
 
   GeneratedColumn<String> get imageAsset => $composableBuilder(
     column: $table.imageAsset,
@@ -2005,8 +1871,6 @@ class $$SavedItemsTableTableManager
                 Value<String?> markdown = const Value.absent(),
                 Value<String?> source = const Value.absent(),
                 Value<String?> url = const Value.absent(),
-                Value<String> displayTime = const Value.absent(),
-                Value<String?> duration = const Value.absent(),
                 Value<String?> imageAsset = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
               }) => SavedItemsCompanion(
@@ -2018,8 +1882,6 @@ class $$SavedItemsTableTableManager
                 markdown: markdown,
                 source: source,
                 url: url,
-                displayTime: displayTime,
-                duration: duration,
                 imageAsset: imageAsset,
                 createdAt: createdAt,
               ),
@@ -2033,8 +1895,6 @@ class $$SavedItemsTableTableManager
                 Value<String?> markdown = const Value.absent(),
                 Value<String?> source = const Value.absent(),
                 Value<String?> url = const Value.absent(),
-                required String displayTime,
-                Value<String?> duration = const Value.absent(),
                 Value<String?> imageAsset = const Value.absent(),
                 required DateTime createdAt,
               }) => SavedItemsCompanion.insert(
@@ -2046,8 +1906,6 @@ class $$SavedItemsTableTableManager
                 markdown: markdown,
                 source: source,
                 url: url,
-                displayTime: displayTime,
-                duration: duration,
                 imageAsset: imageAsset,
                 createdAt: createdAt,
               ),

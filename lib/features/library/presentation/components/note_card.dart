@@ -3,6 +3,7 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../shared/widgets/cards/card_surface.dart';
 import '../../../../shared/widgets/type_badge.dart';
 import '../../domain/entities/library_item.dart';
+import '../utils/relative_time.dart';
 
 class NoteCard extends StatelessWidget {
   const NoteCard({required this.item, super.key});
@@ -20,7 +21,7 @@ class NoteCard extends StatelessWidget {
             children: [
               TypeBadge(type: item.type),
               Text(
-                item.displayTime,
+                formatRelativeTime(item.createdAt),
                 style: const TextStyle(
                   fontSize: 10,
                   color: AppColors.textSecondary,

@@ -6,7 +6,5 @@ class WatchCollections {
 
   final CollectionsRepository _repository;
 
-  Future<void> initialize() => _repository.initialize();
-
   Stream<List<FolioCollection>> call() => _repository.watchCollections();
 }

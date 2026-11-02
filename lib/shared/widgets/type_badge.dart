@@ -15,7 +15,7 @@ class TypeBadge extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
       decoration: BoxDecoration(
         color: type.badgeColor,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(99),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -27,8 +27,8 @@ class TypeBadge extends StatelessWidget {
             style: const TextStyle(
               fontSize: 10,
               height: 1.1,
-              fontWeight: FontWeight.w600,
-              letterSpacing: .8,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 1,
               color: AppColors.primary,
             ),
           ),
@@ -51,8 +51,8 @@ class CardTitle extends StatelessWidget {
       overflow: TextOverflow.ellipsis,
       style: const TextStyle(
         fontFamily: 'Lora',
-        fontSize: 18,
-        height: 1.3,
+        fontSize: 19,
+        height: 1.25,
         color: AppColors.textPrimary,
       ),
     );

@@ -5,7 +5,7 @@ import '../../../../core/theme/app_theme.dart';
 
 enum CaptureAction { videoHighlight, pocketLink, note }
 
-class CaptureSpeedDial extends StatelessWidget {
+class CaptureSpeedDial extends StatefulWidget {
   const CaptureSpeedDial({
     required this.isExpanded,
     required this.onToggle,
@@ -18,46 +18,131 @@ class CaptureSpeedDial extends StatelessWidget {
   final ValueChanged<CaptureAction> onSelected;
 
   @override
+  State<CaptureSpeedDial> createState() => _CaptureSpeedDialState();
+}
+
+class _CaptureSpeedDialState extends State<CaptureSpeedDial>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  bool _reduceMotion = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 320),
+      reverseDuration: const Duration(milliseconds: 220),
+      value: widget.isExpanded ? 1 : 0,
+    );
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _reduceMotion = MediaQuery.disableAnimationsOf(context);
+    if (_reduceMotion) _controller.value = widget.isExpanded ? 1 : 0;
+  }
+
+  @override
+  void didUpdateWidget(CaptureSpeedDial oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.isExpanded == widget.isExpanded) return;
+
+    if (_reduceMotion) {
+      _controller.value = widget.isExpanded ? 1 : 0;
+    } else if (widget.isExpanded) {
+      _controller.forward();
+    } else {
+      _controller.reverse();
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: isExpanded ? 351 : 56,
-      height: isExpanded ? 248 : 56,
-      child: Align(
-        alignment: Alignment.bottomRight,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            if (isExpanded) ...[
-              _CaptureOption(
-                label: 'Video highlight',
-                iconAsset: 'assets/icons/clapperboard.svg',
-                onTap: () => onSelected(CaptureAction.videoHighlight),
-              ),
-              const SizedBox(height: 8),
-              _CaptureOption(
-                label: 'Pocket link',
-                iconAsset: 'assets/icons/link.svg',
-                onTap: () => onSelected(CaptureAction.pocketLink),
-              ),
-              const SizedBox(height: 8),
-              _CaptureOption(
-                label: 'Write a note',
-                iconAsset: 'assets/icons/file_text.svg',
-                onTap: () => onSelected(CaptureAction.note),
-              ),
-              const SizedBox(height: 8),
-            ],
-            _RoundCaptureButton(
-              tooltip: isExpanded ? 'Close capture menu' : 'Capture a new idea',
-              iconAsset: isExpanded
-                  ? 'assets/icons/close.svg'
-                  : 'assets/icons/plus.svg',
-              iconSize: isExpanded ? 16 : 24,
-              onTap: onToggle,
+    return Align(
+      alignment: Alignment.bottomRight,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          if (widget.isExpanded) ...[
+            _AnimatedOption(
+              controller: _controller,
+              interval: const Interval(.34, 1, curve: Curves.easeOutCubic),
+              label: 'Video highlight',
+              iconAsset: 'assets/icons/clapperboard.svg',
+              onTap: () => widget.onSelected(CaptureAction.videoHighlight),
             ),
+            const SizedBox(height: 8),
+            _AnimatedOption(
+              controller: _controller,
+              interval: const Interval(
+                .17,
+                .84,
+                curve: Curves.easeOutCubic,
+              ),
+              label: 'Pocket link',
+              iconAsset: 'assets/icons/link.svg',
+              onTap: () => widget.onSelected(CaptureAction.pocketLink),
+            ),
+            const SizedBox(height: 8),
+            _AnimatedOption(
+              controller: _controller,
+              interval: const Interval(0, .68, curve: Curves.easeOutCubic),
+              label: 'Write a note',
+              iconAsset: 'assets/icons/file_text.svg',
+              onTap: () => widget.onSelected(CaptureAction.note),
+            ),
+            const SizedBox(height: 12),
           ],
-        ),
+          _CaptureButton(
+            tooltip: widget.isExpanded
+                ? 'Close capture menu'
+                : 'Capture a new idea',
+            iconAsset: widget.isExpanded
+                ? 'assets/icons/close.svg'
+                : 'assets/icons/plus.svg',
+            onTap: widget.onToggle,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _AnimatedOption extends StatelessWidget {
+  const _AnimatedOption({
+    required this.controller,
+    required this.interval,
+    required this.label,
+    required this.iconAsset,
+    required this.onTap,
+  });
+
+  final AnimationController controller;
+  final Interval interval;
+  final String label;
+  final String iconAsset;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final animation = CurvedAnimation(parent: controller, curve: interval);
+    return FadeTransition(
+      opacity: animation,
+      child: SlideTransition(
+        position: Tween<Offset>(
+          begin: const Offset(.16, 0),
+          end: Offset.zero,
+        ).animate(animation),
+        child: _CaptureOption(label: label, iconAsset: iconAsset, onTap: onTap),
       ),
     );
   }
@@ -76,51 +161,54 @@ class _CaptureOption extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Semantics(
-      button: true,
-      label: label,
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTap: onTap,
-        child: SizedBox(
-          height: 56,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              Text(
-                label,
-                style: const TextStyle(
-                  color: AppColors.accent,
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
+    return GestureDetector(
+      onTap: onTap,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          Text(
+            label,
+            style: const TextStyle(
+              color: AppColors.white,
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(width: 16),
+
+          DecoratedBox(
+            decoration: const BoxDecoration(
+              color: AppColors.accentSoft,
+              shape: BoxShape.circle,
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(14),
+              child: SvgPicture.asset(
+                iconAsset,
+                width: 24,
+                height: 24,
+                colorFilter: const ColorFilter.mode(
+                  AppColors.primary,
+                  BlendMode.srcIn,
                 ),
               ),
-              const SizedBox(width: 6),
-              _RoundCaptureButton(
-                tooltip: label,
-                iconAsset: iconAsset,
-                iconSize: 24,
-                onTap: onTap,
-              ),
-            ],
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
 }
 
-class _RoundCaptureButton extends StatelessWidget {
-  const _RoundCaptureButton({
+class _CaptureButton extends StatelessWidget {
+  const _CaptureButton({
     required this.tooltip,
     required this.iconAsset,
-    required this.iconSize,
     required this.onTap,
   });
 
   final String tooltip;
   final String iconAsset;
-  final double iconSize;
   final VoidCallback onTap;
 
   @override
@@ -133,8 +221,8 @@ class _RoundCaptureButton extends StatelessWidget {
         child: Material(
           color: AppColors.accent,
           shape: const CircleBorder(),
-          elevation: 6,
-          shadowColor: const Color(0x1F2B2932),
+          elevation: 8,
+          shadowColor: AppColors.textPrimary.withValues(alpha: .28),
           child: InkWell(
             customBorder: const CircleBorder(),
             onTap: onTap,
@@ -143,8 +231,12 @@ class _RoundCaptureButton extends StatelessWidget {
               child: Center(
                 child: SvgPicture.asset(
                   iconAsset,
-                  width: iconSize,
-                  height: iconSize,
+                  width: 18,
+                  height: 18,
+                  colorFilter: const ColorFilter.mode(
+                    AppColors.primary,
+                    BlendMode.srcIn,
+                  ),
                 ),
               ),
             ),

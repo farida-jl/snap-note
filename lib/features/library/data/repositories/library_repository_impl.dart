@@ -8,9 +8,6 @@ class LibraryRepositoryImpl implements LibraryRepository {
   final LibraryLocalDataSource _localDataSource;
 
   @override
-  Future<void> initialize() => _localDataSource.seed();
-
-  @override
   Stream<List<LibraryItem>> watchRecentItems() {
     return _localDataSource.watchRecentItems().map(
       (rows) => rows
@@ -24,8 +21,7 @@ class LibraryRepositoryImpl implements LibraryRepository {
               markdown: row.markdown,
               source: row.source,
               url: row.url,
-              displayTime: row.displayTime,
-              duration: row.duration,
+              createdAt: row.createdAt,
               imageAsset: row.imageAsset,
             ),
           )
