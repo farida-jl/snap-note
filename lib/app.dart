@@ -12,6 +12,9 @@ import 'features/library/data/datasources/library_local_data_source.dart';
 import 'features/library/data/repositories/library_repository_impl.dart';
 import 'features/library/domain/usecases/watch_library.dart';
 import 'features/library/presentation/bloc/library_bloc.dart';
+import 'features/pocket_link/data/datasources/pocket_link_local_data_source.dart';
+import 'features/pocket_link/data/repositories/pocket_link_repository_impl.dart';
+import 'features/pocket_link/domain/repositories/pocket_link_repository.dart';
 
 class SnapNoteApp extends StatefulWidget {
   const SnapNoteApp({super.key, this.database});
@@ -25,6 +28,8 @@ class SnapNoteApp extends StatefulWidget {
 class _SnapNoteAppState extends State<SnapNoteApp> {
   late final AppDatabase _database = widget.database ?? AppDatabase();
   late final bool _ownsDatabase = widget.database == null;
+  late final PocketLinkRepository _pocketLinkRepository =
+      PocketLinkRepositoryImpl(PocketLinkLocalDataSource(_database));
 
   @override
   void dispose() {
@@ -45,20 +50,23 @@ class _SnapNoteAppState extends State<SnapNoteApp> {
       title: 'Snap Note',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
-      home: MultiBlocProvider(
-        providers: [
-          BlocProvider(
-            create: (_) =>
-                LibraryBloc(WatchLibrary(libraryRepository))
-                  ..add(const LibraryStarted()),
-          ),
-          BlocProvider(
-            create: (_) =>
-                CollectionsBloc(WatchCollections(collectionsRepository))
-                  ..add(const CollectionsStarted()),
-          ),
-        ],
-        child: const HomePage(),
+      home: RepositoryProvider<PocketLinkRepository>.value(
+        value: _pocketLinkRepository,
+        child: MultiBlocProvider(
+          providers: [
+            BlocProvider(
+              create: (_) =>
+                  LibraryBloc(WatchLibrary(libraryRepository))
+                    ..add(const LibraryStarted()),
+            ),
+            BlocProvider(
+              create: (_) =>
+                  CollectionsBloc(WatchCollections(collectionsRepository))
+                    ..add(const CollectionsStarted()),
+            ),
+          ],
+          child: const HomePage(),
+        ),
       ),
     );
   }

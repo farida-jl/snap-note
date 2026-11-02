@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import '../../../../core/theme/app_theme.dart';
-import '../../../../shared/widgets/card_surface.dart';
+import '../../../../shared/widgets/cards/card_surface.dart';
 import '../../../../shared/widgets/type_badge.dart';
 import '../../domain/entities/library_item.dart';
 
@@ -78,9 +78,13 @@ class VideoCard extends StatelessWidget {
                       ),
                       alignment: Alignment.center,
                       child: SvgPicture.asset(
-                        'assets/icons/play_filled.svg',
+                        'assets/icons/play.svg',
                         width: 13,
                         height: 13,
+                        colorFilter: const ColorFilter.mode(
+                          AppColors.textPrimary,
+                          BlendMode.srcIn,
+                        ),
                       ),
                     ),
                   ),

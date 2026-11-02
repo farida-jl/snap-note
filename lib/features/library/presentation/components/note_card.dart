@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
-import '../../../../shared/widgets/card_surface.dart';
+import '../../../../shared/widgets/cards/card_surface.dart';
 import '../../../../shared/widgets/type_badge.dart';
 import '../../domain/entities/library_item.dart';
 

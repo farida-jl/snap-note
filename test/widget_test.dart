@@ -11,6 +11,8 @@ import 'package:snap_note/features/library/domain/entities/library_item.dart';
 import 'package:snap_note/features/library/domain/repositories/library_repository.dart';
 import 'package:snap_note/features/library/domain/usecases/watch_library.dart';
 import 'package:snap_note/features/library/presentation/bloc/library_bloc.dart';
+import 'package:snap_note/features/pocket_link/domain/entities/pocket_link_draft.dart';
+import 'package:snap_note/features/pocket_link/domain/repositories/pocket_link_repository.dart';
 
 class _WidgetLibraryRepository implements LibraryRepository {
   @override
@@ -72,25 +74,33 @@ class _WidgetCollectionsRepository implements CollectionsRepository {
   ]);
 }
 
+class _WidgetPocketLinkRepository implements PocketLinkRepository {
+  @override
+  Future<int> save(PocketLinkDraft draft) async => 4;
+}
+
 void main() {
   testWidgets('renders the mock library and switches tabs', (tester) async {
     await tester.pumpWidget(
       MaterialApp(
         theme: AppTheme.light,
-        home: MultiBlocProvider(
-          providers: [
-            BlocProvider(
-              create: (_) =>
-                  LibraryBloc(WatchLibrary(_WidgetLibraryRepository()))
-                    ..add(const LibraryStarted()),
-            ),
-            BlocProvider(
-              create: (_) => CollectionsBloc(
-                WatchCollections(_WidgetCollectionsRepository()),
-              )..add(const CollectionsStarted()),
-            ),
-          ],
-          child: const HomePage(),
+        home: RepositoryProvider<PocketLinkRepository>.value(
+          value: _WidgetPocketLinkRepository(),
+          child: MultiBlocProvider(
+            providers: [
+              BlocProvider(
+                create: (_) =>
+                    LibraryBloc(WatchLibrary(_WidgetLibraryRepository()))
+                      ..add(const LibraryStarted()),
+              ),
+              BlocProvider(
+                create: (_) => CollectionsBloc(
+                  WatchCollections(_WidgetCollectionsRepository()),
+                )..add(const CollectionsStarted()),
+              ),
+            ],
+            child: const HomePage(),
+          ),
         ),
       ),
     );
@@ -127,6 +137,37 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Video highlight'), findsNothing);
+
+    await tester.tap(find.byTooltip('Capture a new idea'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Pocket link'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Create pocket link'), findsOneWidget);
+    expect(find.text('A good find, kept close.'), findsOneWidget);
+    expect(find.text('todoist.com'), findsNothing);
+
+    final urlField = tester.widget<TextField>(
+      find.byKey(const ValueKey('pocket-link-url-field')),
+    );
+    final titleField = tester.widget<TextField>(
+      find.byKey(const ValueKey('pocket-link-title-field')),
+    );
+    final descriptionField = tester.widget<TextField>(
+      find.byKey(const ValueKey('pocket-link-description-field')),
+    );
+    expect(urlField.controller?.text, isEmpty);
+    expect(titleField.controller?.text, isEmpty);
+    expect(descriptionField.controller?.text, isEmpty);
+    expect(
+      find.byKey(const ValueKey('pocket-link-collection-assignment')),
+      findsOneWidget,
+    );
+    expect(find.text('Read Later'), findsOneWidget);
+    expect(find.text('Change'), findsNothing);
+
+    await tester.tap(find.byTooltip('Close'));
+    await tester.pumpAndSettle();
 
     await tester.tap(find.text('Collections'));
     await tester.pumpAndSettle();

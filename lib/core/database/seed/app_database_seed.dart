@@ -3,72 +3,54 @@ part of '../app_database.dart';
 extension AppDatabaseSeed on AppDatabase {
   Future<void> seedMockData() {
     return transaction(() async {
-      await _removeDuplicateMockCollections();
-      await _seedCollectionsIfEmpty();
-      await _seedSavedItemsIfEmpty();
+      final readLaterId = await _ensureReadLaterCollection();
+      await _consolidateLegacyMockCollections(readLaterId);
+      await _seedSavedItemsIfEmpty(readLaterId);
+      await _syncReadLaterItemCount(readLaterId);
     });
   }
 
-  Future<void> _seedCollectionsIfEmpty() async {
-    if (await collections.count().getSingle() != 0) return;
+  Future<int> _ensureReadLaterCollection() async {
+    final existing =
+        await (select(collections)
+              ..where(
+                (row) =>
+                    row.title.equals('Read Later') |
+                    row.title.equals('Read later'),
+              )
+              ..orderBy([(row) => OrderingTerm.asc(row.id)])
+              ..limit(1))
+            .getSingleOrNull();
 
-    await batch((batch) {
-      batch.insertAll(collections, [
-        CollectionsCompanion.insert(
-          title: 'Deep work',
-          description: 'Ideas for better focus',
-          itemCount: 18,
-          colorValue: 0xFFFCE6AC,
-          symbol: 'focus',
-          updatedLabel: 'Updated today',
-          isPinned: const Value(true),
-          updatedAt: DateTime(2026, 11, 1, 10, 30),
-        ),
-        CollectionsCompanion.insert(
-          title: 'Creative sparks',
-          description: 'Inspiration worth keeping',
-          itemCount: 12,
-          colorValue: 0xFFDDECF3,
-          symbol: 'spark',
-          updatedLabel: 'Updated yesterday',
-          updatedAt: DateTime(2026, 10, 31, 18),
-        ),
-        CollectionsCompanion.insert(
-          title: 'Read later',
-          description: 'Articles for quiet moments',
-          itemCount: 24,
-          colorValue: 0xFFE8EEF4,
-          symbol: 'bookmark',
-          updatedLabel: 'Updated 2 days ago',
-          updatedAt: DateTime(2026, 10, 30, 9),
-        ),
-        CollectionsCompanion.insert(
-          title: 'Watchlist',
-          description: 'Videos to revisit',
-          itemCount: 8,
-          colorValue: 0xFFF5DED2,
-          symbol: 'play',
-          updatedLabel: 'Updated last week',
-          updatedAt: DateTime(2026, 10, 25, 14),
-        ),
-      ]);
-    });
+    if (existing != null) {
+      if (existing.title != 'Read Later') {
+        await (update(collections)..where((row) => row.id.equals(existing.id)))
+            .write(const CollectionsCompanion(title: Value('Read Later')));
+      }
+      return existing.id;
+    }
+
+    return into(collections).insert(
+      CollectionsCompanion.insert(
+        title: 'Read Later',
+        description: 'Links saved for later',
+        itemCount: 0,
+        colorValue: 0xFFE8EEF4,
+        symbol: 'bookmark',
+        updatedLabel: 'No links yet',
+        isPinned: const Value(true),
+        updatedAt: DateTime.now(),
+      ),
+    );
   }
 
-  Future<void> _seedSavedItemsIfEmpty() async {
+  Future<void> _seedSavedItemsIfEmpty(int readLaterId) async {
     if (await savedItems.count().getSingle() != 0) return;
-
-    final collectionIds = {
-      for (final collection in await select(collections).get())
-        collection.title: collection.id,
-    };
-    final deepWorkId = collectionIds['Deep work']!;
-    final readLaterId = collectionIds['Read later']!;
 
     await batch((batch) {
       batch.insertAll(savedItems, [
         SavedItemsCompanion.insert(
-          collectionId: deepWorkId,
+          collectionId: readLaterId,
           type: 'note',
           title: 'Make room for deep work',
           description: const Value(
@@ -92,7 +74,7 @@ extension AppDatabaseSeed on AppDatabase {
           createdAt: DateTime(2026, 10, 31, 16, 30),
         ),
         SavedItemsCompanion.insert(
-          collectionId: deepWorkId,
+          collectionId: readLaterId,
           type: 'video',
           title: 'Build a ritual for focus',
           source: const Value('Cal Newport'),
@@ -106,26 +88,48 @@ extension AppDatabaseSeed on AppDatabase {
     });
   }
 
-  Future<void> _removeDuplicateMockCollections() async {
-    const mockKeys = {
+  Future<void> _consolidateLegacyMockCollections(int readLaterId) async {
+    const legacyMockKeys = {
       'Deep work|Ideas for better focus|focus',
       'Creative sparks|Inspiration worth keeping|spark',
       'Read later|Articles for quiet moments|bookmark',
       'Watchlist|Videos to revisit|play',
     };
     final rows = await select(collections).get();
-    final seen = <String>{};
-    final duplicateIds = <int>[];
+    final legacyIds = <int>[];
 
     for (final row in rows) {
+      if (row.id == readLaterId) continue;
       final key = '${row.title}|${row.description}|${row.symbol}';
-      if (mockKeys.contains(key) && !seen.add(key)) duplicateIds.add(row.id);
+      if (legacyMockKeys.contains(key) || row.title == 'Read Later') {
+        legacyIds.add(row.id);
+      }
     }
 
-    if (duplicateIds.isNotEmpty) {
-      await (delete(
-        collections,
-      )..where((row) => row.id.isIn(duplicateIds))).go();
+    if (legacyIds.isNotEmpty) {
+      await (update(savedItems)
+            ..where((row) => row.collectionId.isIn(legacyIds)))
+          .write(SavedItemsCompanion(collectionId: Value(readLaterId)));
+      await (delete(collections)..where((row) => row.id.isIn(legacyIds))).go();
     }
+  }
+
+  Future<void> _syncReadLaterItemCount(int readLaterId) async {
+    final countExpression = savedItems.id.count();
+    final count =
+        await (selectOnly(savedItems)
+              ..addColumns([countExpression])
+              ..where(savedItems.collectionId.equals(readLaterId)))
+            .map((row) => row.read(countExpression) ?? 0)
+            .getSingle();
+
+    await (update(
+      collections,
+    )..where((row) => row.id.equals(readLaterId))).write(
+      CollectionsCompanion(
+        itemCount: Value(count),
+        updatedLabel: Value(count == 0 ? 'No links yet' : '$count saved items'),
+      ),
+    );
   }
 }

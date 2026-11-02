@@ -31,19 +31,19 @@ class CaptureSpeedDial extends StatelessWidget {
             if (isExpanded) ...[
               _CaptureOption(
                 label: 'Video highlight',
-                iconAsset: 'assets/icons/capture_video.svg',
+                iconAsset: 'assets/icons/clapperboard.svg',
                 onTap: () => onSelected(CaptureAction.videoHighlight),
               ),
               const SizedBox(height: 8),
               _CaptureOption(
                 label: 'Pocket link',
-                iconAsset: 'assets/icons/capture_link.svg',
+                iconAsset: 'assets/icons/link.svg',
                 onTap: () => onSelected(CaptureAction.pocketLink),
               ),
               const SizedBox(height: 8),
               _CaptureOption(
                 label: 'Write a note',
-                iconAsset: 'assets/icons/capture_note.svg',
+                iconAsset: 'assets/icons/file_text.svg',
                 onTap: () => onSelected(CaptureAction.note),
               ),
               const SizedBox(height: 8),
@@ -76,27 +76,35 @@ class _CaptureOption extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 56,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: [
-          Text(
-            label,
-            style: const TextStyle(
-              color: AppColors.accent,
-              fontSize: 15,
-              fontWeight: FontWeight.w600,
-            ),
+    return Semantics(
+      button: true,
+      label: label,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: onTap,
+        child: SizedBox(
+          height: 56,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              Text(
+                label,
+                style: const TextStyle(
+                  color: AppColors.accent,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(width: 6),
+              _RoundCaptureButton(
+                tooltip: label,
+                iconAsset: iconAsset,
+                iconSize: 24,
+                onTap: onTap,
+              ),
+            ],
           ),
-          const SizedBox(width: 6),
-          _RoundCaptureButton(
-            tooltip: label,
-            iconAsset: iconAsset,
-            iconSize: 24,
-            onTap: onTap,
-          ),
-        ],
+        ),
       ),
     );
   }

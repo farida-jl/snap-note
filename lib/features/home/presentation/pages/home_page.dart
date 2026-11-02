@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../../../core/theme/app_theme.dart';
 import '../../../collections/presentation/pages/collections_page.dart';
 import '../../../library/presentation/pages/library_page.dart';
+import '../../../pocket_link/domain/repositories/pocket_link_repository.dart';
+import '../../../pocket_link/domain/usecases/save_pocket_link.dart';
+import '../../../pocket_link/presentation/bloc/pocket_link_bloc.dart';
+import '../../../pocket_link/presentation/pages/pocket_link_page.dart';
 import '../../../profile/presentation/pages/profile_page.dart';
 import '../widgets/capture_speed_dial.dart';
 
@@ -65,7 +70,7 @@ class _HomePageState extends State<HomePage> {
               onToggle: () => setState(
                 () => _isCaptureMenuExpanded = !_isCaptureMenuExpanded,
               ),
-              onSelected: (_) => setState(() => _isCaptureMenuExpanded = false),
+              onSelected: _onCaptureActionSelected,
             )
           : null,
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
@@ -89,6 +94,21 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
         ],
+      ),
+    );
+  }
+
+  void _onCaptureActionSelected(CaptureAction action) {
+    setState(() => _isCaptureMenuExpanded = false);
+    if (action != CaptureAction.pocketLink) return;
+
+    final repository = context.read<PocketLinkRepository>();
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => BlocProvider(
+          create: (_) => PocketLinkBloc(SavePocketLink(repository)),
+          child: const PocketLinkPage(),
+        ),
       ),
     );
   }
