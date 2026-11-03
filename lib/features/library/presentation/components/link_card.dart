@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
 
 import '../../../../core/theme/app_theme.dart';
 import '../../../../shared/widgets/cards/card_surface.dart';
@@ -25,9 +24,13 @@ class LinkCard extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     TypeBadge(type: item.type),
-                    Text(formatRelativeTime(item.createdAt),
-                  style: const TextStyle(fontSize: 9, color: AppColors.primary),
-                ),
+                    Text(
+                      formatRelativeTime(item.createdAt),
+                      style: TextStyle(
+                        fontSize: 9,
+                        color: context.appColors.primary,
+                      ),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 8),
@@ -35,9 +38,9 @@ class LinkCard extends StatelessWidget {
                 const SizedBox(height: 6),
                 Text(
                   item.source ?? '',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 11,
-                    color: AppColors.textSecondary,
+                    color: context.appColors.textSecondary,
                   ),
                 ),
               ],

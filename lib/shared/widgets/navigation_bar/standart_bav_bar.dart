@@ -13,7 +13,7 @@ class StandartNavigationBar extends StatelessWidget {
       child: Stack(
         alignment: Alignment.center,
         children: [
-          const Padding(
+          Padding(
             padding: EdgeInsets.symmetric(horizontal: 64),
             child: Text(
               'Create pocket link',
@@ -23,7 +23,7 @@ class StandartNavigationBar extends StatelessWidget {
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
-                color: AppColors.primary,
+                color: context.appColors.primary,
               ),
             ),
           ),
@@ -32,7 +32,7 @@ class StandartNavigationBar extends StatelessWidget {
             child: IconButton(
               tooltip: 'Close',
               onPressed: () => Navigator.of(context).maybePop(),
-              icon: const Icon(Icons.chevron_left),
+              icon: Icon(Icons.chevron_left),
             ),
           ),
         ],

@@ -15,34 +15,37 @@ class ProfilePage extends StatelessWidget {
           Container(
             height: 88,
             alignment: Alignment.center,
-            decoration: const BoxDecoration(
-              color: AppColors.subtle,
+            decoration: BoxDecoration(
+              color: context.appColors.subtle,
               shape: BoxShape.circle,
             ),
-            child: const Text(
+            child: Text(
               'AJ',
               style: TextStyle(
                 fontFamily: 'Lora',
                 fontSize: 28,
-                color: AppColors.primary,
+                color: context.appColors.primary,
               ),
             ),
           ),
           const SizedBox(height: 22),
-          const Text(
+          Text(
             'Your profile',
             style: TextStyle(
               fontFamily: 'Lora',
               fontSize: 32,
               letterSpacing: -1,
-              color: AppColors.primary,
+              color: context.appColors.primary,
             ),
           ),
           const SizedBox(height: 8),
-          const Text(
+          Text(
             'Account and preferences will live here.',
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
+            style: TextStyle(
+              fontSize: 13,
+              color: context.appColors.textSecondary,
+            ),
           ),
         ],
       ),

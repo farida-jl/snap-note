@@ -131,9 +131,15 @@ class _HomeHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final metricStyle = TextStyle(
+      fontSize: 12,
+      height: 1.3,
+      color: context.appColors.canvasMuted,
+    );
+
     return DecoratedBox(
-      decoration: const BoxDecoration(
-        color: AppColors.canvas,
+      decoration: BoxDecoration(
+        color: context.appColors.canvas,
         borderRadius: BorderRadius.vertical(bottom: Radius.circular(34)),
       ),
       child: Padding(
@@ -146,20 +152,20 @@ class _HomeHeader extends StatelessWidget {
             Text(
               'Room for ideas.',
               style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                color: AppColors.canvasText,
+                color: context.appColors.canvasText,
                 fontSize: 40,
               ),
             ),
             const SizedBox(height: 10),
-            const Wrap(
+            Wrap(
               spacing: 8,
               runSpacing: 4,
               children: [
-                Text('72 notes', style: _metricStyle),
-                Text('·', style: _metricStyle),
-                Text('38 links', style: _metricStyle),
-                Text('·', style: _metricStyle),
-                Text('18 video moments', style: _metricStyle),
+                Text('72 notes', style: metricStyle),
+                Text('·', style: metricStyle),
+                Text('38 links', style: metricStyle),
+                Text('·', style: metricStyle),
+                Text('18 video moments', style: metricStyle),
               ],
             ),
             const SizedBox(height: 24),
@@ -169,12 +175,6 @@ class _HomeHeader extends StatelessWidget {
       ),
     );
   }
-
-  static const _metricStyle = TextStyle(
-    fontSize: 12,
-    height: 1.3,
-    color: AppColors.canvasMuted,
-  );
 }
 
 class _BrandBar extends StatelessWidget {
@@ -185,8 +185,8 @@ class _BrandBar extends StatelessWidget {
     return Row(
       children: [
         DecoratedBox(
-          decoration: const BoxDecoration(
-            color: AppColors.accent,
+          decoration: BoxDecoration(
+            color: context.appColors.accent,
             shape: BoxShape.circle,
           ),
           child: Padding(
@@ -195,31 +195,33 @@ class _BrandBar extends StatelessWidget {
               'assets/icons/asterisk.svg',
               width: 15,
               height: 15,
-              colorFilter: const ColorFilter.mode(
-                AppColors.canvas,
+              colorFilter: ColorFilter.mode(
+                context.appColors.canvas,
                 BlendMode.srcIn,
               ),
             ),
           ),
         ),
         const SizedBox(width: 10),
-        const Text(
+        Text(
           'SNAP NOTE',
           style: TextStyle(
             fontSize: 12,
             height: 1,
             letterSpacing: 1.8,
             fontWeight: FontWeight.w800,
-            color: AppColors.canvasText,
+            color: context.appColors.canvasText,
           ),
         ),
         const Spacer(),
-        const _SyncStatus(),
+        //const _SyncStatus(),
       ],
     );
   }
 }
 
+// Kept ready for when sync status is enabled in the brand bar.
+// ignore: unused_element
 class _SyncStatus extends StatelessWidget {
   const _SyncStatus();
 
@@ -233,17 +235,21 @@ class _SyncStatus extends StatelessWidget {
           border: Border.all(color: const Color(0xFF426071)),
           borderRadius: BorderRadius.circular(99),
         ),
-        child: const Row(
+        child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.cloud_done_outlined, size: 14, color: AppColors.accent),
+            Icon(
+              Icons.cloud_done_outlined,
+              size: 14,
+              color: context.appColors.accent,
+            ),
             SizedBox(width: 5),
             Text(
               'Synced',
               style: TextStyle(
                 fontSize: 10,
                 fontWeight: FontWeight.w600,
-                color: AppColors.canvasMuted,
+                color: context.appColors.canvasMuted,
               ),
             ),
           ],
@@ -259,12 +265,12 @@ class _SearchField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return TextField(
-      style: const TextStyle(fontSize: 15, color: AppColors.textPrimary),
+      style: TextStyle(fontSize: 15, color: context.appColors.textPrimary),
       decoration: InputDecoration(
         hintText: 'Find an idea, link, or moment',
-        hintStyle: const TextStyle(
+        hintStyle: TextStyle(
           fontSize: 14,
-          color: AppColors.textSecondary,
+          color: context.appColors.textSecondary,
         ),
         prefixIcon: Padding(
           padding: const EdgeInsets.fromLTRB(16, 15, 11, 15),
@@ -272,20 +278,27 @@ class _SearchField extends StatelessWidget {
             'assets/icons/search.svg',
             width: 20,
             height: 20,
+            colorFilter: ColorFilter.mode(
+              context.appColors.textSecondary,
+              BlendMode.srcIn,
+            ),
           ),
         ),
-        suffixIcon: const Padding(
+        suffixIcon: Padding(
           padding: EdgeInsets.only(right: 12),
           child: Center(
             widthFactor: 1,
             child: Text(
               '⌕',
-              style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+              style: TextStyle(
+                fontSize: 12,
+                color: context.appColors.textSecondary,
+              ),
             ),
           ),
         ),
         filled: true,
-        fillColor: AppColors.canvasText,
+        fillColor: context.appColors.card,
         contentPadding: const EdgeInsets.symmetric(vertical: 17),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
@@ -293,7 +306,7 @@ class _SearchField extends StatelessWidget {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: AppColors.accent, width: 2),
+          borderSide: BorderSide(color: context.appColors.accent, width: 2),
         ),
       ),
     );
@@ -316,9 +329,12 @@ class _SectionHeader extends StatelessWidget {
                 style: Theme.of(context).textTheme.titleLarge,
               ),
               const SizedBox(height: 3),
-              const Text(
+              Text(
                 'Your newest thoughts, ready when you are.',
-                style: TextStyle(fontSize: 11, color: AppColors.textSecondary),
+                style: TextStyle(
+                  fontSize: 11,
+                  color: context.appColors.textSecondary,
+                ),
               ),
             ],
           ),
@@ -326,7 +342,7 @@ class _SectionHeader extends StatelessWidget {
         TextButton.icon(
           onPressed: () {},
           style: TextButton.styleFrom(
-            foregroundColor: AppColors.primary,
+            foregroundColor: context.appColors.primary,
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
           ),
           iconAlignment: IconAlignment.end,
@@ -334,8 +350,12 @@ class _SectionHeader extends StatelessWidget {
             'assets/icons/sort.svg',
             width: 15,
             height: 15,
+            colorFilter: ColorFilter.mode(
+              context.appColors.primary,
+              BlendMode.srcIn,
+            ),
           ),
-          label: const Text('Newest', style: TextStyle(fontSize: 11)),
+          label: Text('Newest', style: TextStyle(fontSize: 11)),
         ),
       ],
     );
@@ -388,7 +408,7 @@ class _LoadingLibrary extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Padding(
+    return Padding(
       padding: EdgeInsets.symmetric(vertical: 72),
       child: Center(
         child: Column(
@@ -397,7 +417,10 @@ class _LoadingLibrary extends StatelessWidget {
             SizedBox(height: 14),
             Text(
               'Gathering your ideas…',
-              style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+              style: TextStyle(
+                fontSize: 12,
+                color: context.appColors.textSecondary,
+              ),
             ),
           ],
         ),
@@ -414,15 +437,15 @@ class _EmptyLibrary extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.fromLTRB(24, 32, 24, 30),
       decoration: BoxDecoration(
-        color: AppColors.card,
+        color: context.appColors.card,
         borderRadius: BorderRadius.circular(24),
       ),
-      child: const Column(
+      child: Column(
         children: [
           Icon(
             Icons.lightbulb_outline_rounded,
             size: 34,
-            color: AppColors.accent,
+            color: context.appColors.accent,
           ),
           SizedBox(height: 14),
           Text(
@@ -431,7 +454,7 @@ class _EmptyLibrary extends StatelessWidget {
             style: TextStyle(
               fontFamily: 'Lora',
               fontSize: 20,
-              color: AppColors.textPrimary,
+              color: context.appColors.textPrimary,
             ),
           ),
           SizedBox(height: 7),
@@ -441,7 +464,7 @@ class _EmptyLibrary extends StatelessWidget {
             style: TextStyle(
               fontSize: 12,
               height: 1.5,
-              color: AppColors.textSecondary,
+              color: context.appColors.textSecondary,
             ),
           ),
         ],
@@ -455,16 +478,23 @@ class _Reassurance extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Row(
+    return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Icon(Icons.lock_outline_rounded, size: 13, color: AppColors.success),
+        Icon(
+          Icons.lock_outline_rounded,
+          size: 13,
+          color: context.appColors.success,
+        ),
         SizedBox(width: 6),
         Flexible(
           child: Text(
             'All your ideas, safely in one place.',
             overflow: TextOverflow.ellipsis,
-            style: TextStyle(fontSize: 11, color: AppColors.textSecondary),
+            style: TextStyle(
+              fontSize: 11,
+              color: context.appColors.textSecondary,
+            ),
           ),
         ),
       ],
@@ -482,27 +512,27 @@ class _ErrorMessage extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: AppColors.card,
+        color: context.appColors.card,
         borderRadius: BorderRadius.circular(24),
       ),
       child: Column(
         children: [
-          const Icon(
+          Icon(
             Icons.cloud_off_outlined,
             size: 32,
-            color: AppColors.textSecondary,
+            color: context.appColors.textSecondary,
           ),
           const SizedBox(height: 12),
           Text(
             message ?? 'Your library could not be loaded.',
             textAlign: TextAlign.center,
-            style: const TextStyle(color: AppColors.textSecondary),
+            style: TextStyle(color: context.appColors.textSecondary),
           ),
           const SizedBox(height: 12),
           FilledButton.tonal(
             onPressed: () =>
                 context.read<LibraryBloc>().add(const LibraryStarted()),
-            child: const Text('Try again'),
+            child: Text('Try again'),
           ),
         ],
       ),

@@ -24,12 +24,12 @@ class TypeBadge extends StatelessWidget {
           const SizedBox(width: 5),
           Text(
             type.label,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 10,
               height: 1.1,
               fontWeight: FontWeight.w700,
               letterSpacing: 1,
-              color: AppColors.primary,
+              color: AppColors.slate500,
             ),
           ),
         ],
@@ -49,11 +49,11 @@ class CardTitle extends StatelessWidget {
       title,
       maxLines: 2,
       overflow: TextOverflow.ellipsis,
-      style: const TextStyle(
+      style: TextStyle(
         fontFamily: 'Lora',
         fontSize: 19,
         height: 1.25,
-        color: AppColors.textPrimary,
+        color: context.appColors.textPrimary,
       ),
     );
   }

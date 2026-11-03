@@ -22,9 +22,9 @@ class NoteCard extends StatelessWidget {
               TypeBadge(type: item.type),
               Text(
                 formatRelativeTime(item.createdAt),
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 10,
-                  color: AppColors.textSecondary,
+                  color: context.appColors.textSecondary,
                 ),
               ),
             ],
@@ -36,9 +36,9 @@ class NoteCard extends StatelessWidget {
             item.description ?? '',
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 13,
-              color: AppColors.textSecondary,
+              color: context.appColors.textSecondary,
             ),
           ),
         ],

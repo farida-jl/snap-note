@@ -50,6 +50,8 @@ class _SnapNoteAppState extends State<SnapNoteApp> {
       title: 'Snap Note',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
+      darkTheme: AppTheme.dark,
+      themeMode: ThemeMode.system,
       home: RepositoryProvider<PocketLinkRepository>.value(
         value: _pocketLinkRepository,
         child: MultiBlocProvider(

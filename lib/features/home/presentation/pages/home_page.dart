@@ -145,10 +145,10 @@ class _BottomNavigation extends StatelessWidget {
       minimum: const EdgeInsets.fromLTRB(16, 0, 16, 12),
       child: DecoratedBox(
         decoration: BoxDecoration(
-          color: AppColors.primary,
+          color: AppColors.slate500,
           boxShadow: [
             BoxShadow(
-              color: AppColors.textPrimary.withValues(alpha: 0.1),
+              color: context.appColors.textPrimary.withValues(alpha: 0.1),
               blurRadius: 18,
               spreadRadius: 1,
               offset: const Offset(0, 4),
@@ -197,8 +197,8 @@ class _BottomNavigation extends StatelessWidget {
           curve: Curves.easeOutCubic,
           builder: (context, progress, child) {
             final itemColor = Color.lerp(
-              AppColors.white,
-              AppColors.accent,
+              AppColors.mint100,
+              context.appColors.accent,
               progress,
             )!;
 
@@ -214,7 +214,9 @@ class _BottomNavigation extends StatelessWidget {
                       width: 30 * progress,
                       height: 6,
                       decoration: BoxDecoration(
-                        color: AppColors.accent.withValues(alpha: progress),
+                        color: context.appColors.accent.withValues(
+                          alpha: progress,
+                        ),
                         borderRadius: const BorderRadius.vertical(
                           bottom: Radius.circular(3),
                         ),

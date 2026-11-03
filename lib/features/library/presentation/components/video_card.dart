@@ -30,14 +30,18 @@ class VideoCard extends StatelessWidget {
                       'assets/icons/play.svg',
                       width: 12,
                       height: 12,
+                      colorFilter: ColorFilter.mode(
+                        context.appColors.primary,
+                        BlendMode.srcIn,
+                      ),
                     ),
                     const SizedBox(width: 6),
                     Text(
                       formatRelativeTime(item.createdAt),
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
-                        color: AppColors.primary,
+                        color: context.appColors.primary,
                       ),
                     ),
                     const SizedBox(width: 6),
@@ -45,9 +49,9 @@ class VideoCard extends StatelessWidget {
                       child: Text(
                         '· ${item.source ?? ''}',
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 11,
-                          color: AppColors.textSecondary,
+                          color: context.appColors.textSecondary,
                         ),
                       ),
                     ),
@@ -73,7 +77,7 @@ class VideoCard extends StatelessWidget {
                     child: Container(
                       width: 28,
                       height: 28,
-                      decoration: const BoxDecoration(
+                      decoration: BoxDecoration(
                         color: Colors.white,
                         shape: BoxShape.circle,
                       ),
@@ -83,7 +87,7 @@ class VideoCard extends StatelessWidget {
                         width: 13,
                         height: 13,
                         colorFilter: const ColorFilter.mode(
-                          AppColors.textPrimary,
+                          AppColors.slate500,
                           BlendMode.srcIn,
                         ),
                       ),

@@ -83,11 +83,7 @@ class _CaptureSpeedDialState extends State<CaptureSpeedDial>
             const SizedBox(height: 8),
             _AnimatedOption(
               controller: _controller,
-              interval: const Interval(
-                .17,
-                .84,
-                curve: Curves.easeOutCubic,
-              ),
+              interval: const Interval(.17, .84, curve: Curves.easeOutCubic),
               label: 'Pocket link',
               iconAsset: 'assets/icons/link.svg',
               onTap: () => widget.onSelected(CaptureAction.pocketLink),
@@ -106,9 +102,7 @@ class _CaptureSpeedDialState extends State<CaptureSpeedDial>
             tooltip: widget.isExpanded
                 ? 'Close capture menu'
                 : 'Capture a new idea',
-            iconAsset: widget.isExpanded
-                ? 'assets/icons/close.svg'
-                : 'assets/icons/plus.svg',
+            iconAsset: widget.isExpanded ? Icons.close : Icons.add,
             onTap: widget.onToggle,
           ),
         ],
@@ -168,7 +162,7 @@ class _CaptureOption extends StatelessWidget {
         children: [
           Text(
             label,
-            style: const TextStyle(
+            style: TextStyle(
               color: AppColors.white,
               fontSize: 14,
               fontWeight: FontWeight.w700,
@@ -177,8 +171,8 @@ class _CaptureOption extends StatelessWidget {
           const SizedBox(width: 16),
 
           DecoratedBox(
-            decoration: const BoxDecoration(
-              color: AppColors.accentSoft,
+            decoration: BoxDecoration(
+              color: context.appColors.accent,
               shape: BoxShape.circle,
             ),
             child: Padding(
@@ -187,8 +181,8 @@ class _CaptureOption extends StatelessWidget {
                 iconAsset,
                 width: 24,
                 height: 24,
-                colorFilter: const ColorFilter.mode(
-                  AppColors.primary,
+                colorFilter: ColorFilter.mode(
+                  context.appColors.onAccent,
                   BlendMode.srcIn,
                 ),
               ),
@@ -208,7 +202,7 @@ class _CaptureButton extends StatelessWidget {
   });
 
   final String tooltip;
-  final String iconAsset;
+  final IconData iconAsset;
   final VoidCallback onTap;
 
   @override
@@ -219,24 +213,20 @@ class _CaptureButton extends StatelessWidget {
       child: Tooltip(
         message: tooltip,
         child: Material(
-          color: AppColors.accent,
+          color: context.appColors.accent,
           shape: const CircleBorder(),
           elevation: 8,
-          shadowColor: AppColors.textPrimary.withValues(alpha: .28),
+          shadowColor: context.appColors.textPrimary.withValues(alpha: .28),
           child: InkWell(
             customBorder: const CircleBorder(),
             onTap: onTap,
             child: SizedBox.square(
               dimension: 56,
               child: Center(
-                child: SvgPicture.asset(
+                child: Icon(
                   iconAsset,
-                  width: 18,
-                  height: 18,
-                  colorFilter: const ColorFilter.mode(
-                    AppColors.primary,
-                    BlendMode.srcIn,
-                  ),
+                  size: 22,
+                  color: context.appColors.onAccent,
                 ),
               ),
             ),

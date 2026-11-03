@@ -113,7 +113,7 @@ void main() {
     final barrier = tester.widget<ModalBarrier>(
       find.byKey(const ValueKey('capture-menu-content-barrier')),
     );
-    expect(barrier.color, const Color(0xC218354A));
+    expect(barrier.color, const Color(0xB3000000));
 
     await tester.tap(
       find.byKey(const ValueKey('capture-menu-content-barrier')),
