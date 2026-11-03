@@ -33,6 +33,9 @@ migrate_working_dir/
 /build/
 /coverage/
 
+# Local branding source assets
+/assets/branding/
+
 # Symbolication related
 app.*.symbols
 
