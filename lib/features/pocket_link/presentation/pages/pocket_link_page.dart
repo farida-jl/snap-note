@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:snap_note/shared/widgets/input_field/input_field.dart';
 import 'package:snap_note/shared/widgets/navigation_bar/standart_bav_bar.dart';
 
 import '../../../../core/theme/app_theme.dart';
@@ -51,7 +52,7 @@ class _PocketLinkPageState extends State<PocketLinkPage> {
         }
       },
       child: Scaffold(
-        backgroundColor: AppColors.background,
+        backgroundColor: context.appColors.background,
         body: SafeArea(
           child: Column(
             children: [
@@ -69,7 +70,7 @@ class _PocketLinkPageState extends State<PocketLinkPage> {
                       children: [
                         const _Introduction(),
                         const SizedBox(height: 22),
-                        _LabeledField(
+                        ValidateLabeledField(
                           fieldKey: const ValueKey('pocket-link-url-field'),
                           label: 'Link URL',
                           hintText: 'https://example.com/article',
@@ -78,28 +79,32 @@ class _PocketLinkPageState extends State<PocketLinkPage> {
                           maxLines: 4,
                           minLines: 1,
                           prefixIcon: 'assets/icons/link.svg',
+                          isRequired: true,
+                          validator: _validateUrl,
                           onChanged: (value) => context
                               .read<PocketLinkBloc>()
                               .add(PocketLinkUrlChanged(value)),
                         ),
                         const SizedBox(height: 22),
-                        _LabeledField(
+                        LabeledField(
                           fieldKey: const ValueKey('pocket-link-title-field'),
                           label: 'Title',
                           hintText: 'Give this link a title',
                           controller: _titleController,
+                          isRequired: true,
                           onChanged: (value) => context
                               .read<PocketLinkBloc>()
                               .add(PocketLinkTitleChanged(value)),
                         ),
                         const SizedBox(height: 22),
-                        _LabeledField(
+                        LabeledField(
                           fieldKey: const ValueKey(
                             'pocket-link-description-field',
                           ),
                           label: 'Description',
                           hintText: 'Why do you want to keep this?',
                           controller: _descriptionController,
+                          isRequired: false,
                           minLines: 3,
                           maxLines: 5,
                           onChanged: (value) => context
@@ -120,8 +125,19 @@ class _PocketLinkPageState extends State<PocketLinkPage> {
       ),
     );
   }
-}
 
+  String? _validateUrl(String value) {
+    if (value.isEmpty) return null;
+
+    final uri = Uri.tryParse(value.trim());
+    final isValid =
+        uri != null &&
+        uri.hasScheme &&
+        {'http', 'https'}.contains(uri.scheme) &&
+        uri.host.isNotEmpty;
+    return isValid ? null : 'Enter a valid URL, such as https://example.com.';
+  }
+}
 
 class _Introduction extends StatelessWidget {
   const _Introduction();
@@ -134,133 +150,53 @@ class _Introduction extends StatelessWidget {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
           decoration: BoxDecoration(
-            color: AppColors.subtle,
+            color: context.appColors.subtle,
             borderRadius: BorderRadius.circular(8),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              SvgPicture.asset('assets/icons/link.svg', width: 13, height: 13),
+              SvgPicture.asset(
+                'assets/icons/link.svg',
+                width: 13,
+                height: 13,
+                colorFilter: ColorFilter.mode(
+                  context.appColors.primary,
+                  BlendMode.srcIn,
+                ),
+              ),
               const SizedBox(width: 5),
-              const Text(
+              Text(
                 'POCKET LINK',
                 style: TextStyle(
                   fontSize: 10,
                   height: 1.1,
                   fontWeight: FontWeight.w600,
                   letterSpacing: .8,
-                  color: AppColors.primary,
+                  color: context.appColors.primary,
                 ),
               ),
             ],
           ),
         ),
         const SizedBox(height: 12),
-        const Text(
+        Text(
           'A good find, kept close.',
           style: TextStyle(
             fontFamily: 'Lora',
             fontSize: 29,
             height: 1.15,
             letterSpacing: -.7,
-            color: AppColors.primary,
+            color: context.appColors.primary,
           ),
         ),
         const SizedBox(height: 10),
-        const Text(
+        Text(
           'Save a link with a little context for future you.',
           style: TextStyle(
             fontSize: 13,
             height: 1.6,
-            color: AppColors.textSecondary,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _LabeledField extends StatelessWidget {
-  const _LabeledField({
-    required this.fieldKey,
-    required this.label,
-    required this.hintText,
-    required this.controller,
-    required this.onChanged,
-    this.keyboardType,
-    this.prefixIcon,
-    this.minLines,
-    this.maxLines = 1,
-  });
-
-  final Key fieldKey;
-  final String label;
-  final String hintText;
-  final TextEditingController controller;
-  final ValueChanged<String> onChanged;
-  final TextInputType? keyboardType;
-  final String? prefixIcon;
-  final int? minLines;
-  final int maxLines;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: const TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w600,
-            color: AppColors.textPrimary,
-          ),
-        ),
-        const SizedBox(height: 8),
-        TextField(
-          key: fieldKey,
-          controller: controller,
-          keyboardType: keyboardType,
-          minLines: minLines,
-          maxLines: maxLines,
-          onChanged: onChanged,
-          style: const TextStyle(
-            fontSize: 14,
-            height: 1.5,
-            color: AppColors.textPrimary,
-          ),
-          decoration: InputDecoration(
-            hintText: hintText,
-            hintStyle: const TextStyle(
-              fontSize: 14,
-              color: AppColors.textSecondary,
-            ),
-            prefixIcon: prefixIcon == null
-                ? null
-                : Padding(
-                    padding: const EdgeInsets.fromLTRB(14, 16, 10, 16),
-                    child: SvgPicture.asset(
-                      prefixIcon!,
-                      width: 18,
-                      height: 18,
-                      colorFilter: const ColorFilter.mode(
-                        AppColors.textSecondary,
-                        BlendMode.srcIn,
-                      ),
-                    ),
-                  ),
-            prefixIconConstraints: const BoxConstraints(minWidth: 42),
-            filled: true,
-            fillColor: AppColors.card,
-            contentPadding: const EdgeInsets.all(14),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: AppColors.border),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: AppColors.primary),
-            ),
+            color: context.appColors.textSecondary,
           ),
         ),
       ],
@@ -278,10 +214,10 @@ class _CollectionAssignment extends StatelessWidget {
       children: [
         Text(
           'Saved to collection',
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.w600,
-            color: AppColors.textPrimary,
+            color: context.appColors.textPrimary,
           ),
         ),
         const SizedBox(height: 8),
@@ -290,9 +226,9 @@ class _CollectionAssignment extends StatelessWidget {
           width: double.infinity,
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: AppColors.subtle,
+            color: context.appColors.subtle,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppColors.border),
+            border: Border.all(color: context.appColors.border),
           ),
           child: Row(
             children: [
@@ -304,15 +240,19 @@ class _CollectionAssignment extends StatelessWidget {
                   'assets/icons/folders.svg',
                   width: 23,
                   height: 23,
+                  colorFilter: ColorFilter.mode(
+                    context.appColors.primary,
+                    BlendMode.srcIn,
+                  ),
                 ),
               ),
               const SizedBox(width: 12),
-              const Expanded(
+              Expanded(
                 child: Text(
                   'Read Later',
                   style: TextStyle(
                     fontSize: 14,
-                    color: AppColors.primary,
+                    color: context.appColors.primary,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -321,9 +261,9 @@ class _CollectionAssignment extends StatelessWidget {
                 width: 30,
                 height: 30,
                 alignment: Alignment.center,
-                child: const Icon(
+                child: Icon(
                   Icons.keyboard_arrow_down,
-                  color: AppColors.primary,
+                  color: context.appColors.primary,
                   size: 24.0,
                 ),
               ),
@@ -349,13 +289,16 @@ class _SaveActions extends StatelessWidget {
         return Container(
           width: double.infinity,
           padding: const EdgeInsets.fromLTRB(24, 12, 24, 12),
-          color: AppColors.background,
+          color: context.appColors.background,
           child: Column(
             children: [
-              const Text(
+              Text(
                 'Find it later by title, link, or your description.',
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 11, color: AppColors.textSecondary),
+                style: TextStyle(
+                  fontSize: 11,
+                  color: context.appColors.textSecondary,
+                ),
               ),
               const SizedBox(height: 12),
               SizedBox(
@@ -368,21 +311,20 @@ class _SaveActions extends StatelessWidget {
                         )
                       : null,
                   style: FilledButton.styleFrom(
-                    backgroundColor: AppColors.accent,
-                    disabledBackgroundColor: AppColors.accent.withValues(
-                      alpha: .45,
-                    ),
-                    foregroundColor: AppColors.textPrimary,
+                    backgroundColor: context.appColors.accent,
+                    disabledBackgroundColor: context.appColors.accent
+                        .withValues(alpha: .45),
+                    foregroundColor: context.appColors.onAccent,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
                   child: isSaving
-                      ? const SizedBox.square(
+                      ? SizedBox.square(
                           dimension: 20,
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
-                            color: AppColors.textPrimary,
+                            color: context.appColors.onAccent,
                           ),
                         )
                       : Row(
@@ -392,9 +334,13 @@ class _SaveActions extends StatelessWidget {
                               'assets/icons/pocket_link_check.svg',
                               width: 19,
                               height: 19,
+                              colorFilter: ColorFilter.mode(
+                                context.appColors.onAccent,
+                                BlendMode.srcIn,
+                              ),
                             ),
                             const SizedBox(width: 9),
-                            const Text(
+                            Text(
                               'Save pocket link',
                               style: TextStyle(
                                 fontSize: 15,

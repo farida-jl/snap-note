@@ -151,6 +151,46 @@ void main() {
     expect(urlField.controller?.text, isEmpty);
     expect(titleField.controller?.text, isEmpty);
     expect(descriptionField.controller?.text, isEmpty);
+    expect(find.text('Link URL *', findRichText: true), findsOneWidget);
+    expect(find.text('Title *', findRichText: true), findsOneWidget);
+    expect(find.text('Description', findRichText: true), findsOneWidget);
+    expect(find.text('Description *', findRichText: true), findsNothing);
+
+    await tester.enterText(
+      find.byKey(const ValueKey('pocket-link-url-field')),
+      'not a url',
+    );
+    await tester.pump();
+    expect(
+      find.text('Enter a valid URL, such as https://example.com.'),
+      findsNothing,
+    );
+
+    await tester.tap(find.byKey(const ValueKey('pocket-link-title-field')));
+    await tester.pump();
+    expect(
+      find.text('Enter a valid URL, such as https://example.com.'),
+      findsOneWidget,
+    );
+
+    await tester.tap(find.byKey(const ValueKey('pocket-link-url-field')));
+    await tester.pump();
+    expect(
+      find.text('Enter a valid URL, such as https://example.com.'),
+      findsNothing,
+    );
+
+    await tester.enterText(
+      find.byKey(const ValueKey('pocket-link-url-field')),
+      'https://example.com/article',
+    );
+    await tester.tap(find.byKey(const ValueKey('pocket-link-title-field')));
+    await tester.pump();
+    expect(
+      find.text('Enter a valid URL, such as https://example.com.'),
+      findsNothing,
+    );
+
     expect(
       find.byKey(const ValueKey('pocket-link-collection-assignment')),
       findsOneWidget,

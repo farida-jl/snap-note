@@ -69,8 +69,7 @@ class PocketLinkState extends Equatable {
     return parsed;
   }
 
-  bool get isValid =>
-      uri != null && title.trim().isNotEmpty && description.trim().isNotEmpty;
+  bool get isValid => uri != null && title.trim().isNotEmpty;
 
   String get sourceHost => uri?.host.replaceFirst(RegExp(r'^www\.'), '') ?? '';
 
