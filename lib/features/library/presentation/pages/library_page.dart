@@ -147,12 +147,10 @@ class _HomeHeader extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const _BrandBar(),
-            const SizedBox(height: 30),
             Text(
               'Room for ideas.',
               style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                color: context.appColors.canvasText,
+                color: context.appColors.primary,
                 fontSize: 40,
               ),
             ),
@@ -173,49 +171,6 @@ class _HomeHeader extends StatelessWidget {
           ],
         ),
       ),
-    );
-  }
-}
-
-class _BrandBar extends StatelessWidget {
-  const _BrandBar();
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        DecoratedBox(
-          decoration: BoxDecoration(
-            color: context.appColors.accent,
-            shape: BoxShape.circle,
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(7),
-            child: SvgPicture.asset(
-              'assets/icons/asterisk.svg',
-              width: 15,
-              height: 15,
-              colorFilter: ColorFilter.mode(
-                context.appColors.canvas,
-                BlendMode.srcIn,
-              ),
-            ),
-          ),
-        ),
-        const SizedBox(width: 10),
-        Text(
-          'SNAP NOTE',
-          style: TextStyle(
-            fontSize: 12,
-            height: 1,
-            letterSpacing: 1.8,
-            fontWeight: FontWeight.w800,
-            color: context.appColors.canvasText,
-          ),
-        ),
-        const Spacer(),
-        //const _SyncStatus(),
-      ],
     );
   }
 }
@@ -281,19 +236,6 @@ class _SearchField extends StatelessWidget {
             colorFilter: ColorFilter.mode(
               context.appColors.textSecondary,
               BlendMode.srcIn,
-            ),
-          ),
-        ),
-        suffixIcon: Padding(
-          padding: EdgeInsets.only(right: 12),
-          child: Center(
-            widthFactor: 1,
-            child: Text(
-              '⌕',
-              style: TextStyle(
-                fontSize: 12,
-                color: context.appColors.textSecondary,
-              ),
             ),
           ),
         ),

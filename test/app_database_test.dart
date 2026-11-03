@@ -4,6 +4,28 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:snap_note/core/database/app_database.dart';
 
 void main() {
+  test('saves a Markdown note to Read Later by default', () async {
+    final database = AppDatabase(NativeDatabase.memory());
+    addTearDown(database.close);
+
+    final id = await database.insertNote(
+      title: 'Make room for deep work',
+      markdown: '## My ritual\n\n- [x] Clear the desk',
+    );
+
+    final saved = await (database.select(
+      database.savedItems,
+    )..where((row) => row.id.equals(id))).getSingle();
+    final readLater = await (database.select(
+      database.collections,
+    )..where((row) => row.title.equals('Read Later'))).getSingle();
+
+    expect(saved.type, 'note');
+    expect(saved.markdown, contains('- [x]'));
+    expect(saved.collectionId, readLater.id);
+    expect(readLater.itemCount, 1);
+  });
+
   test('saves a pocket link and updates its collection', () async {
     final database = AppDatabase(NativeDatabase.memory());
     addTearDown(database.close);

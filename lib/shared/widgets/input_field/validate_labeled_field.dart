@@ -10,9 +10,12 @@ class ValidateLabeledField extends StatefulWidget {
     required this.label,
     required this.hintText,
     required this.controller,
-    required this.onChanged,
     required this.validator,
+    this.onChanged,
     this.keyboardType,
+    this.textCapitalization = TextCapitalization.none,
+    this.textInputAction,
+    this.onSubmitted,
     this.prefixIcon,
     this.isRequired = false,
     this.minLines,
@@ -24,13 +27,16 @@ class ValidateLabeledField extends StatefulWidget {
   final String label;
   final String hintText;
   final TextEditingController controller;
-  final ValueChanged<String> onChanged;
+  final ValueChanged<String>? onChanged;
   final InputFieldValidator validator;
   final TextInputType? keyboardType;
+  final TextCapitalization textCapitalization;
+  final TextInputAction? textInputAction;
+  final ValueChanged<String>? onSubmitted;
   final String? prefixIcon;
   final bool isRequired;
   final int? minLines;
-  final int maxLines;
+  final int? maxLines;
 
   @override
   State<ValidateLabeledField> createState() => _ValidateLabeledFieldState();
@@ -68,6 +74,9 @@ class _ValidateLabeledFieldState extends State<ValidateLabeledField> {
       controller: widget.controller,
       focusNode: _focusNode,
       keyboardType: widget.keyboardType,
+      textCapitalization: widget.textCapitalization,
+      textInputAction: widget.textInputAction,
+      onSubmitted: widget.onSubmitted,
       prefixIcon: widget.prefixIcon,
       isRequired: widget.isRequired,
       errorText: _showValidation

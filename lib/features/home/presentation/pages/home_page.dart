@@ -4,7 +4,11 @@ import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../../../core/theme/app_theme.dart';
 import '../../../collections/presentation/pages/collections_page.dart';
+import '../../../collections/presentation/bloc/collections_bloc.dart';
 import '../../../library/presentation/pages/library_page.dart';
+import '../../../notes/domain/repositories/note_repository.dart';
+import '../../../notes/domain/usecases/save_note.dart';
+import '../../../notes/presentation/pages/note_editor_page.dart';
 import '../../../pocket_link/domain/repositories/pocket_link_repository.dart';
 import '../../../pocket_link/domain/usecases/save_pocket_link.dart';
 import '../../../pocket_link/presentation/bloc/pocket_link_bloc.dart';
@@ -101,17 +105,32 @@ class _HomePageState extends State<HomePage> {
 
   void _onCaptureActionSelected(CaptureAction action) {
     setState(() => _isCaptureMenuExpanded = false);
-    if (action != CaptureAction.pocketLink) return;
-
-    final repository = context.read<PocketLinkRepository>();
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (_) => BlocProvider(
-          create: (_) => PocketLinkBloc(SavePocketLink(repository)),
-          child: const PocketLinkPage(),
-        ),
-      ),
-    );
+    switch (action) {
+      case CaptureAction.note:
+        final repository = context.read<NoteRepository>();
+        Navigator.of(context).push(
+          MaterialPageRoute<void>(
+            builder: (_) => BlocProvider.value(
+              value: context.read<CollectionsBloc>(),
+              child: NoteEditorPage(saveNote: SaveNote(repository)),
+            ),
+          ),
+        );
+        return;
+      case CaptureAction.pocketLink:
+        final repository = context.read<PocketLinkRepository>();
+        Navigator.of(context).push(
+          MaterialPageRoute<void>(
+            builder: (_) => BlocProvider(
+              create: (_) => PocketLinkBloc(SavePocketLink(repository)),
+              child: const PocketLinkPage(),
+            ),
+          ),
+        );
+        return;
+      case CaptureAction.videoHighlight:
+        return;
+    }
   }
 }
 

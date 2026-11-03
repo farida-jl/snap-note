@@ -1,5 +1,9 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_quill/flutter_quill.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:snap_note/core/theme/app_theme.dart';
 import 'package:snap_note/features/collections/domain/entities/folio_collection.dart';
@@ -11,6 +15,8 @@ import 'package:snap_note/features/library/domain/entities/library_item.dart';
 import 'package:snap_note/features/library/domain/repositories/library_repository.dart';
 import 'package:snap_note/features/library/domain/usecases/watch_library.dart';
 import 'package:snap_note/features/library/presentation/bloc/library_bloc.dart';
+import 'package:snap_note/features/notes/domain/entities/note_draft.dart';
+import 'package:snap_note/features/notes/domain/repositories/note_repository.dart';
 import 'package:snap_note/features/pocket_link/domain/entities/pocket_link_draft.dart';
 import 'package:snap_note/features/pocket_link/domain/repositories/pocket_link_repository.dart';
 
@@ -71,13 +77,36 @@ class _WidgetPocketLinkRepository implements PocketLinkRepository {
   Future<int> save(PocketLinkDraft draft) async => 4;
 }
 
+class _WidgetNoteRepository implements NoteRepository {
+  final savedDrafts = <NoteDraft>[];
+
+  @override
+  Future<int> save(NoteDraft draft) async {
+    savedDrafts.add(draft);
+    return savedDrafts.length;
+  }
+}
+
 void main() {
   testWidgets('renders the mock library and switches tabs', (tester) async {
+    final noteRepository = _WidgetNoteRepository();
     await tester.pumpWidget(
       MaterialApp(
         theme: AppTheme.light,
-        home: RepositoryProvider<PocketLinkRepository>.value(
-          value: _WidgetPocketLinkRepository(),
+        localizationsDelegates: const [
+          GlobalMaterialLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          FlutterQuillLocalizations.delegate,
+        ],
+        supportedLocales: FlutterQuillLocalizations.supportedLocales,
+        home: MultiRepositoryProvider(
+          providers: [
+            RepositoryProvider<PocketLinkRepository>.value(
+              value: _WidgetPocketLinkRepository(),
+            ),
+            RepositoryProvider<NoteRepository>.value(value: noteRepository),
+          ],
           child: MultiBlocProvider(
             providers: [
               BlocProvider(
@@ -200,6 +229,60 @@ void main() {
 
     await tester.tap(find.byTooltip('Close'));
     await tester.pumpAndSettle();
+
+    await tester.tap(find.byTooltip('Capture a new idea'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Write a note'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Create note'), findsOneWidget);
+    expect(find.text('A thought, kept close.'), findsOneWidget);
+    expect(find.byKey(const ValueKey('note-content-field')), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('note-collection-assignment')),
+      findsOneWidget,
+    );
+    expect(find.text('Read Later'), findsOneWidget);
+    expect(find.byTooltip('Preview note'), findsNothing);
+    expect(find.byTooltip('Bold'), findsOneWidget);
+
+    final collectionAssignment = find.byKey(
+      const ValueKey('note-collection-assignment'),
+    );
+    await tester.ensureVisible(collectionAssignment);
+    await tester.tap(collectionAssignment);
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('collection-option-1')), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('collection-option-1')));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(
+      find.byKey(const ValueKey('note-title-field')),
+      'Make room for deep work',
+    );
+    const noteContent =
+        'My starting ritual\n\nDeep work\n\nPhone in another room';
+    final quillEditor = tester.widget<QuillEditor>(
+      find.byKey(const ValueKey('note-content-field')),
+    );
+    quillEditor.controller.replaceText(
+      0,
+      0,
+      noteContent,
+      const TextSelection.collapsed(offset: noteContent.length),
+    );
+    await tester.pump();
+
+    await tester.tap(find.byKey(const ValueKey('save-note-button')));
+    await tester.pumpAndSettle();
+
+    expect(noteRepository.savedDrafts, hasLength(1));
+    expect(noteRepository.savedDrafts.single.title, 'Make room for deep work');
+    expect(noteRepository.savedDrafts.single.collectionId, 1);
+    final savedDocument = Document.fromJson(
+      jsonDecode(noteRepository.savedDrafts.single.markdown) as List,
+    );
+    expect(savedDocument.toPlainText().trim(), noteContent);
 
     await tester.tap(find.text('Collections'));
     await tester.pumpAndSettle();

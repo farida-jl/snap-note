@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:snap_note/shared/widgets/input_field/input_field.dart';
-import 'package:snap_note/shared/widgets/navigation_bar/standart_bav_bar.dart';
+import 'package:snap_note/shared/widgets/navigation_bar/standart_nav_bar.dart';
 
 import '../../../../core/theme/app_theme.dart';
+import '../../../../shared/widgets/collection_assignment.dart';
 import '../bloc/pocket_link_bloc.dart';
 
 class PocketLinkPage extends StatefulWidget {
@@ -56,7 +57,7 @@ class _PocketLinkPageState extends State<PocketLinkPage> {
         body: SafeArea(
           child: Column(
             children: [
-              const StandartNavigationBar(),
+              StandartNavigationBar(title: 'Create pocket link'),
               Expanded(
                 child: SingleChildScrollView(
                   physics: const BouncingScrollPhysics(),
@@ -112,7 +113,11 @@ class _PocketLinkPageState extends State<PocketLinkPage> {
                               .add(PocketLinkDescriptionChanged(value)),
                         ),
                         const SizedBox(height: 20),
-                        const _CollectionAssignment(),
+                        const CollectionAssignment(
+                          assignmentKey: ValueKey(
+                            'pocket-link-collection-assignment',
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -197,77 +202,6 @@ class _Introduction extends StatelessWidget {
             fontSize: 13,
             height: 1.6,
             color: context.appColors.textSecondary,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _CollectionAssignment extends StatelessWidget {
-  const _CollectionAssignment();
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Saved to collection',
-          style: TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w600,
-            color: context.appColors.textPrimary,
-          ),
-        ),
-        const SizedBox(height: 8),
-        Container(
-          key: const ValueKey('pocket-link-collection-assignment'),
-          width: double.infinity,
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: context.appColors.subtle,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: context.appColors.border),
-          ),
-          child: Row(
-            children: [
-              Container(
-                width: 42,
-                height: 42,
-                alignment: Alignment.center,
-                child: SvgPicture.asset(
-                  'assets/icons/folders.svg',
-                  width: 23,
-                  height: 23,
-                  colorFilter: ColorFilter.mode(
-                    context.appColors.primary,
-                    BlendMode.srcIn,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  'Read Later',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: context.appColors.primary,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-              Container(
-                width: 30,
-                height: 30,
-                alignment: Alignment.center,
-                child: Icon(
-                  Icons.keyboard_arrow_down,
-                  color: context.appColors.primary,
-                  size: 24.0,
-                ),
-              ),
-            ],
           ),
         ),
       ],

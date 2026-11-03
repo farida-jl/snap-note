@@ -58,7 +58,6 @@ final class AppThemeColors extends ThemeExtension<AppThemeColors> {
     required this.onAccent,
     required this.canvas,
     required this.canvasMuted,
-    required this.canvasText,
     required this.success,
   });
 
@@ -68,13 +67,12 @@ final class AppThemeColors extends ThemeExtension<AppThemeColors> {
     primary: AppColors.slate500,
     textPrimary: AppColors.slate900,
     textSecondary: AppColors.slate400,
-    border: AppColors.mint300,
+    border: AppColors.slate500,
     subtle: AppColors.mint200,
     accent: AppColors.gold500,
     onAccent: AppColors.slate900,
     canvas: AppColors.slate500,
     canvasMuted: AppColors.mint600,
-    canvasText: AppColors.mint100,
     success: AppColors.mint900,
   );
 
@@ -84,13 +82,12 @@ final class AppThemeColors extends ThemeExtension<AppThemeColors> {
     primary: AppColors.gold100,
     textPrimary: AppColors.mint100,
     textSecondary: AppColors.mint600,
-    border: AppColors.slate500,
+    border: AppColors.mint300,
     subtle: AppColors.slate700,
     accent: AppColors.gold600,
     onAccent: AppColors.slate500,
     canvas: AppColors.slate700,
     canvasMuted: AppColors.mint600,
-    canvasText: AppColors.mint900,
     success: AppColors.mint500,
   );
 
@@ -105,7 +102,6 @@ final class AppThemeColors extends ThemeExtension<AppThemeColors> {
   final Color onAccent;
   final Color canvas;
   final Color canvasMuted;
-  final Color canvasText;
   final Color success;
 
   @override
@@ -136,7 +132,6 @@ final class AppThemeColors extends ThemeExtension<AppThemeColors> {
       onAccent: onAccent ?? this.onAccent,
       canvas: canvas ?? this.canvas,
       canvasMuted: canvasMuted ?? this.canvasMuted,
-      canvasText: canvasText ?? this.canvasText,
       success: success ?? this.success,
     );
   }
@@ -156,7 +151,6 @@ final class AppThemeColors extends ThemeExtension<AppThemeColors> {
       onAccent: Color.lerp(onAccent, other.onAccent, t)!,
       canvas: Color.lerp(canvas, other.canvas, t)!,
       canvasMuted: Color.lerp(canvasMuted, other.canvasMuted, t)!,
-      canvasText: Color.lerp(canvasText, other.canvasText, t)!,
       success: Color.lerp(success, other.success, t)!,
     );
   }

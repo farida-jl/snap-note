@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import '../../../core/theme/app_theme.dart';
 
 class StandartNavigationBar extends StatelessWidget {
-  const StandartNavigationBar({super.key});
+  const StandartNavigationBar({required this.title, super.key});
+
+  final String title;
 
   @override
   Widget build(BuildContext context) {
@@ -16,7 +18,7 @@ class StandartNavigationBar extends StatelessWidget {
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 64),
             child: Text(
-              'Create pocket link',
+              title,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               textAlign: TextAlign.center,

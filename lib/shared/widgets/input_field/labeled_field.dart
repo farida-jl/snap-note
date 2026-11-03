@@ -9,9 +9,12 @@ class LabeledField extends StatelessWidget {
     required this.label,
     required this.hintText,
     required this.controller,
-    required this.onChanged,
+    this.onChanged,
     this.focusNode,
     this.keyboardType,
+    this.textCapitalization = TextCapitalization.none,
+    this.textInputAction,
+    this.onSubmitted,
     this.prefixIcon,
     this.errorText,
     this.isRequired = false,
@@ -24,14 +27,17 @@ class LabeledField extends StatelessWidget {
   final String label;
   final String hintText;
   final TextEditingController controller;
-  final ValueChanged<String> onChanged;
+  final ValueChanged<String>? onChanged;
   final FocusNode? focusNode;
   final TextInputType? keyboardType;
+  final TextCapitalization textCapitalization;
+  final TextInputAction? textInputAction;
+  final ValueChanged<String>? onSubmitted;
   final String? prefixIcon;
   final String? errorText;
   final bool isRequired;
   final int? minLines;
-  final int maxLines;
+  final int? maxLines;
 
   @override
   Widget build(BuildContext context) {
@@ -67,9 +73,12 @@ class LabeledField extends StatelessWidget {
           controller: controller,
           focusNode: focusNode,
           keyboardType: keyboardType,
+          textCapitalization: textCapitalization,
+          textInputAction: textInputAction,
           minLines: minLines,
           maxLines: maxLines,
           onChanged: onChanged,
+          onSubmitted: onSubmitted,
           style: TextStyle(
             fontSize: 14,
             height: 1.5,
@@ -101,11 +110,10 @@ class LabeledField extends StatelessWidget {
             fillColor: context.appColors.card,
             contentPadding: const EdgeInsets.all(14),
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(0),
               borderSide: BorderSide(color: context.appColors.border),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(color: context.appColors.primary),
             ),
           ),

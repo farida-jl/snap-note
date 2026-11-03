@@ -52,6 +52,41 @@ extension AppDatabaseQueries on AppDatabase {
     });
   }
 
+  Future<int> insertNote({
+    required String title,
+    required String markdown,
+    int? collectionId,
+  }) async {
+    return transaction(() async {
+      final targetCollectionId =
+          collectionId ?? await _ensureReadLaterCollection();
+      final collection = await (select(
+        collections,
+      )..where((row) => row.id.equals(targetCollectionId))).getSingle();
+
+      final id = await into(savedItems).insert(
+        SavedItemsCompanion.insert(
+          collectionId: collection.id,
+          type: 'note',
+          title: title,
+          markdown: Value(markdown),
+          createdAt: DateTime.now(),
+        ),
+      );
+
+      await (update(
+        collections,
+      )..where((row) => row.id.equals(collection.id))).write(
+        CollectionsCompanion(
+          itemCount: Value(collection.itemCount + 1),
+          updatedLabel: const Value('Updated just now'),
+          updatedAt: Value(DateTime.now()),
+        ),
+      );
+      return id;
+    });
+  }
+
   Future<int> _ensureReadLaterCollection() async {
     final existing =
         await (select(collections)
