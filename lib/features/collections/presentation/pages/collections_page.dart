@@ -172,7 +172,7 @@ class _SectionHeader extends StatelessWidget {
         ),
         TextButton.icon(
           onPressed: () => Navigator.of(context).push(
-            MaterialPageRoute<bool>(
+            MaterialPageRoute<int>(
               builder: (_) => BlocProvider.value(
                 value: context.read<CollectionsBloc>(),
                 child: const CreateNewCollectionPage(),

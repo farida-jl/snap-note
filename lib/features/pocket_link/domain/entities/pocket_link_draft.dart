@@ -5,12 +5,14 @@ class PocketLinkDraft extends Equatable {
     required this.url,
     required this.title,
     required this.description,
+    this.collectionId,
   });
 
   final String url;
   final String title;
   final String description;
+  final int? collectionId;
 
   @override
-  List<Object> get props => [url, title, description];
+  List<Object?> get props => [url, title, description, collectionId];
 }

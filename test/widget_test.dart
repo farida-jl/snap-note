@@ -233,6 +233,17 @@ void main() {
     expect(find.text('Read Later'), findsOneWidget);
     expect(find.text('Change'), findsNothing);
 
+    final pocketCollectionAssignment = find.byKey(
+      const ValueKey('pocket-link-collection-assignment'),
+    );
+    await tester.ensureVisible(pocketCollectionAssignment);
+    await tester.tap(pocketCollectionAssignment);
+    await tester.pumpAndSettle();
+    expect(find.text('Save to collection'), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('collection-option-1')));
+    await tester.pumpAndSettle();
+    expect(find.text('Deep work'), findsOneWidget);
+
     await tester.tap(find.byTooltip('Close'));
     await tester.pumpAndSettle();
 

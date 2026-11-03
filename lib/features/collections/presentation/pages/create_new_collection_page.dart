@@ -107,7 +107,7 @@ class _CreateNewCollectionPageState extends State<CreateNewCollectionPage> {
           previous.creationStatus != current.creationStatus,
       listener: (context, state) {
         if (state.creationStatus == CollectionCreationStatus.success) {
-          Navigator.of(context).pop(true);
+          Navigator.of(context).pop(state.createdCollectionId);
         } else if (state.creationStatus == CollectionCreationStatus.failure) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -366,16 +366,16 @@ class _EmojiPicker extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.start,
       children: [
         InkWell(
-            key: const ValueKey('collection-emoji-picker'),
-            onTap: onEmojiPressed,
-            borderRadius: BorderRadius.circular(18),
-            child: Ink(
-              width: 80,
-              height: 80,
-              child: Center(
-                child: Text(emoji, style: const TextStyle(fontSize: 60)),
-              ),
-            )
+          key: const ValueKey('collection-emoji-picker'),
+          onTap: onEmojiPressed,
+          borderRadius: BorderRadius.circular(18),
+          child: Ink(
+            width: 80,
+            height: 80,
+            child: Center(
+              child: Text(emoji, style: const TextStyle(fontSize: 60)),
+            ),
+          ),
         ),
         GestureDetector(
           onTap: onEmojiPressed,

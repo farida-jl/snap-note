@@ -57,6 +57,7 @@ class CollectionsState extends Equatable {
     this.message,
     this.creationStatus = CollectionCreationStatus.idle,
     this.creationMessage,
+    this.createdCollectionId,
   });
 
   final CollectionsStatus status;
@@ -64,6 +65,7 @@ class CollectionsState extends Equatable {
   final String? message;
   final CollectionCreationStatus creationStatus;
   final String? creationMessage;
+  final int? createdCollectionId;
 
   CollectionsState copyWith({
     CollectionsStatus? status,
@@ -71,6 +73,7 @@ class CollectionsState extends Equatable {
     String? message,
     CollectionCreationStatus? creationStatus,
     String? creationMessage,
+    int? createdCollectionId,
   }) {
     return CollectionsState(
       status: status ?? this.status,
@@ -78,6 +81,7 @@ class CollectionsState extends Equatable {
       message: message,
       creationStatus: creationStatus ?? this.creationStatus,
       creationMessage: creationMessage,
+      createdCollectionId: createdCollectionId,
     );
   }
 
@@ -88,6 +92,7 @@ class CollectionsState extends Equatable {
     message,
     creationStatus,
     creationMessage,
+    createdCollectionId,
   ];
 }
 
@@ -145,8 +150,13 @@ class CollectionsBloc extends Bloc<CollectionsEvent, CollectionsState> {
 
     emit(state.copyWith(creationStatus: CollectionCreationStatus.saving));
     try {
-      await _createCollection(event.collection);
-      emit(state.copyWith(creationStatus: CollectionCreationStatus.success));
+      final collectionId = await _createCollection(event.collection);
+      emit(
+        state.copyWith(
+          creationStatus: CollectionCreationStatus.success,
+          createdCollectionId: collectionId,
+        ),
+      );
     } catch (error) {
       emit(
         state.copyWith(

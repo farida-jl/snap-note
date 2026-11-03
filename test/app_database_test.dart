@@ -71,6 +71,36 @@ void main() {
     expect(readLater.itemCount, 1);
   });
 
+  test('saves a pocket link to the selected collection', () async {
+    final database = AppDatabase(NativeDatabase.memory());
+    addTearDown(database.close);
+    final collectionId = await database.insertCollection(
+      title: 'Research',
+      description: 'Useful references',
+      symbol: '📚',
+      isPinned: false,
+    );
+
+    final itemId = await database.insertPocketLink(
+      url: 'https://example.com/research',
+      title: 'Research link',
+      description: 'Save this reference.',
+      sourceHost: 'example.com',
+      collectionId: collectionId,
+    );
+
+    final item = await (database.select(
+      database.savedItems,
+    )..where((row) => row.id.equals(itemId))).getSingle();
+    final collection = await (database.select(
+      database.collections,
+    )..where((row) => row.id.equals(collectionId))).getSingle();
+
+    expect(item.collectionId, collectionId);
+    expect(collection.itemCount, 1);
+    expect(collection.updatedLabel, 'Updated just now');
+  });
+
   test('creates Read Later and always stores new pocket links there', () async {
     final database = AppDatabase(NativeDatabase.memory());
     addTearDown(database.close);

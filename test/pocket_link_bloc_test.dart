@@ -30,6 +30,7 @@ void main() {
     );
     bloc.add(const PocketLinkTitleChanged('Updated title'));
     bloc.add(const PocketLinkDescriptionChanged('Useful context'));
+    bloc.add(const PocketLinkCollectionChanged(7));
     await expectLater(
       bloc.stream,
       emitsInOrder([
@@ -43,6 +44,11 @@ void main() {
           (state) => state.isValid,
           'isValid',
           isTrue,
+        ),
+        isA<PocketLinkState>().having(
+          (state) => state.collectionId,
+          'collectionId',
+          7,
         ),
       ]),
     );
@@ -65,6 +71,7 @@ void main() {
     );
 
     expect(repository.savedDraft?.title, 'Updated title');
+    expect(repository.savedDraft?.collectionId, 7);
   });
 
   test('does not save an invalid URL', () async {

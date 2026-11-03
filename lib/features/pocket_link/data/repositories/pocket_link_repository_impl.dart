@@ -15,6 +15,7 @@ class PocketLinkRepositoryImpl implements PocketLinkRepository {
       title: draft.title.trim(),
       description: draft.description.trim(),
       sourceHost: uri.host.replaceFirst(RegExp(r'^www\.'), ''),
+      collectionId: draft.collectionId,
     );
   }
 }

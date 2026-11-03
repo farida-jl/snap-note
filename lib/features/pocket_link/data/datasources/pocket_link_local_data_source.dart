@@ -10,12 +10,14 @@ class PocketLinkLocalDataSource {
     required String title,
     required String description,
     required String sourceHost,
+    int? collectionId,
   }) {
     return _database.insertPocketLink(
       url: url,
       title: title,
       description: description,
       sourceHost: sourceHost,
+      collectionId: collectionId,
     );
   }
 }

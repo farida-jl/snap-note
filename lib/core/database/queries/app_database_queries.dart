@@ -40,12 +40,14 @@ extension AppDatabaseQueries on AppDatabase {
     required String title,
     required String description,
     required String sourceHost,
+    int? collectionId,
   }) async {
     return transaction(() async {
-      final readLaterId = await _ensureReadLaterCollection();
+      final targetCollectionId =
+          collectionId ?? await _ensureReadLaterCollection();
       final collection = await (select(
         collections,
-      )..where((row) => row.id.equals(readLaterId))).getSingle();
+      )..where((row) => row.id.equals(targetCollectionId))).getSingle();
 
       final id = await into(savedItems).insert(
         SavedItemsCompanion.insert(

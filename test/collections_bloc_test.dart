@@ -88,11 +88,17 @@ void main() {
           'creation status',
           CollectionCreationStatus.saving,
         ),
-        isA<CollectionsState>().having(
-          (state) => state.creationStatus,
-          'creation status',
-          CollectionCreationStatus.success,
-        ),
+        isA<CollectionsState>()
+            .having(
+              (state) => state.creationStatus,
+              'creation status',
+              CollectionCreationStatus.success,
+            )
+            .having(
+              (state) => state.createdCollectionId,
+              'created collection id',
+              2,
+            ),
       ]),
     );
     expect(repository.createdCollection, collection);

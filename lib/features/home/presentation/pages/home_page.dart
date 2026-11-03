@@ -121,9 +121,12 @@ class _HomePageState extends State<HomePage> {
         final repository = context.read<PocketLinkRepository>();
         Navigator.of(context).push(
           MaterialPageRoute<void>(
-            builder: (_) => BlocProvider(
-              create: (_) => PocketLinkBloc(SavePocketLink(repository)),
-              child: const PocketLinkPage(),
+            builder: (_) => BlocProvider.value(
+              value: context.read<CollectionsBloc>(),
+              child: BlocProvider(
+                create: (_) => PocketLinkBloc(SavePocketLink(repository)),
+                child: const PocketLinkPage(),
+              ),
             ),
           ),
         );

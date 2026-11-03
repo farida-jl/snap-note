@@ -35,6 +35,15 @@ final class PocketLinkDescriptionChanged extends PocketLinkEvent {
   List<Object?> get props => [description];
 }
 
+final class PocketLinkCollectionChanged extends PocketLinkEvent {
+  const PocketLinkCollectionChanged(this.collectionId);
+
+  final int collectionId;
+
+  @override
+  List<Object?> get props => [collectionId];
+}
+
 final class PocketLinkSubmitted extends PocketLinkEvent {
   const PocketLinkSubmitted();
 }
@@ -47,6 +56,7 @@ class PocketLinkState extends Equatable {
     this.title = '',
     this.description = '',
     this.topic = 'Read Later',
+    this.collectionId,
     this.status = PocketLinkStatus.editing,
     this.errorMessage,
   });
@@ -55,6 +65,7 @@ class PocketLinkState extends Equatable {
   final String title;
   final String description;
   final String topic;
+  final int? collectionId;
   final PocketLinkStatus status;
   final String? errorMessage;
 
@@ -77,6 +88,7 @@ class PocketLinkState extends Equatable {
     String? url,
     String? title,
     String? description,
+    int? collectionId,
     PocketLinkStatus? status,
     String? errorMessage,
   }) {
@@ -85,6 +97,7 @@ class PocketLinkState extends Equatable {
       title: title ?? this.title,
       description: description ?? this.description,
       topic: topic,
+      collectionId: collectionId ?? this.collectionId,
       status: status ?? this.status,
       errorMessage: errorMessage,
     );
@@ -96,6 +109,7 @@ class PocketLinkState extends Equatable {
     title,
     description,
     topic,
+    collectionId,
     status,
     errorMessage,
   ];
@@ -106,6 +120,7 @@ class PocketLinkBloc extends Bloc<PocketLinkEvent, PocketLinkState> {
     on<PocketLinkUrlChanged>(_onUrlChanged);
     on<PocketLinkTitleChanged>(_onTitleChanged);
     on<PocketLinkDescriptionChanged>(_onDescriptionChanged);
+    on<PocketLinkCollectionChanged>(_onCollectionChanged);
     on<PocketLinkSubmitted>(_onSubmitted);
   }
 
@@ -137,6 +152,18 @@ class PocketLinkBloc extends Bloc<PocketLinkEvent, PocketLinkState> {
     );
   }
 
+  void _onCollectionChanged(
+    PocketLinkCollectionChanged event,
+    Emitter<PocketLinkState> emit,
+  ) {
+    emit(
+      state.copyWith(
+        collectionId: event.collectionId,
+        status: PocketLinkStatus.editing,
+      ),
+    );
+  }
+
   Future<void> _onSubmitted(
     PocketLinkSubmitted event,
     Emitter<PocketLinkState> emit,
@@ -149,6 +176,7 @@ class PocketLinkBloc extends Bloc<PocketLinkEvent, PocketLinkState> {
           url: state.url,
           title: state.title,
           description: state.description,
+          collectionId: state.collectionId,
         ),
       );
       emit(state.copyWith(status: PocketLinkStatus.success));

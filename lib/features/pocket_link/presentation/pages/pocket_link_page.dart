@@ -6,6 +6,8 @@ import 'package:snap_note/shared/widgets/navigation_bar/standart_nav_bar.dart';
 
 import '../../../../core/theme/app_theme.dart';
 import '../../../../shared/widgets/collection_assignment.dart';
+import '../../../collections/domain/entities/folio_collection.dart';
+import '../../../collections/presentation/bloc/collections_bloc.dart';
 import '../bloc/pocket_link_bloc.dart';
 
 class PocketLinkPage extends StatefulWidget {
@@ -39,6 +41,8 @@ class _PocketLinkPageState extends State<PocketLinkPage> {
 
   @override
   Widget build(BuildContext context) {
+    final collections = context.watch<CollectionsBloc>().state.collections;
+
     return BlocListener<PocketLinkBloc, PocketLinkState>(
       listenWhen: (previous, current) => previous.status != current.status,
       listener: (context, state) {
@@ -65,7 +69,8 @@ class _PocketLinkPageState extends State<PocketLinkPage> {
                   child: BlocBuilder<PocketLinkBloc, PocketLinkState>(
                     buildWhen: (previous, current) =>
                         previous.url != current.url ||
-                        previous.sourceHost != current.sourceHost,
+                        previous.sourceHost != current.sourceHost ||
+                        previous.collectionId != current.collectionId,
                     builder: (context, state) => Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -113,10 +118,18 @@ class _PocketLinkPageState extends State<PocketLinkPage> {
                               .add(PocketLinkDescriptionChanged(value)),
                         ),
                         const SizedBox(height: 20),
-                        const CollectionAssignment(
-                          assignmentKey: ValueKey(
+                        CollectionAssignment(
+                          assignmentKey: const ValueKey(
                             'pocket-link-collection-assignment',
                           ),
+                          selectedCollection: _selectedCollection(
+                            collections,
+                            state.collectionId,
+                          ),
+                          collections: collections,
+                          onSelected: (collection) => context
+                              .read<PocketLinkBloc>()
+                              .add(PocketLinkCollectionChanged(collection.id)),
                         ),
                       ],
                     ),
@@ -141,6 +154,19 @@ class _PocketLinkPageState extends State<PocketLinkPage> {
         {'http', 'https'}.contains(uri.scheme) &&
         uri.host.isNotEmpty;
     return isValid ? null : 'Enter a valid URL, such as https://example.com.';
+  }
+
+  FolioCollection? _selectedCollection(
+    List<FolioCollection> collections,
+    int? selectedCollectionId,
+  ) {
+    for (final collection in collections) {
+      if (collection.id == selectedCollectionId) return collection;
+    }
+    for (final collection in collections) {
+      if (collection.title == 'Read Later') return collection;
+    }
+    return null;
   }
 }
 
