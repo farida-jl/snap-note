@@ -1,0 +1,4 @@
+interface:
+  display_name: "writeCommit"
+  short_description: "Draft commit messages and descriptions"
+  default_prompt: "Use $write-commit to write a commit message and description for the current diff."
