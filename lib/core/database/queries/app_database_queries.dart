@@ -15,6 +15,26 @@ extension AppDatabaseQueries on AppDatabase {
         .watch();
   }
 
+  Future<int> insertCollection({
+    required String title,
+    required String description,
+    required String symbol,
+    required bool isPinned,
+  }) {
+    return into(collections).insert(
+      CollectionsCompanion.insert(
+        title: title.trim(),
+        description: description.trim(),
+        itemCount: 0,
+        colorValue: 0xFFFCEBCA,
+        symbol: symbol,
+        updatedLabel: 'Created just now',
+        isPinned: Value(isPinned),
+        updatedAt: DateTime.now(),
+      ),
+    );
+  }
+
   Future<int> insertPocketLink({
     required String url,
     required String title,

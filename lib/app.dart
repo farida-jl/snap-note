@@ -8,6 +8,7 @@ import 'core/theme/app_theme.dart';
 import 'features/collections/data/datasources/collections_local_data_source.dart';
 import 'features/collections/data/repositories/collections_repository_impl.dart';
 import 'features/collections/domain/usecases/watch_collections.dart';
+import 'features/collections/domain/usecases/create_collection.dart';
 import 'features/collections/presentation/bloc/collections_bloc.dart';
 import 'features/home/presentation/pages/home_page.dart';
 import 'features/library/data/datasources/library_local_data_source.dart';
@@ -82,9 +83,10 @@ class _SnapNoteAppState extends State<SnapNoteApp> {
                     ..add(const LibraryStarted()),
             ),
             BlocProvider(
-              create: (_) =>
-                  CollectionsBloc(WatchCollections(collectionsRepository))
-                    ..add(const CollectionsStarted()),
+              create: (_) => CollectionsBloc(
+                WatchCollections(collectionsRepository),
+                CreateCollection(collectionsRepository),
+              )..add(const CollectionsStarted()),
             ),
           ],
           child: const HomePage(),

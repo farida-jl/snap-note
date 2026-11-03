@@ -5,6 +5,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../domain/entities/folio_collection.dart';
 import '../bloc/collections_bloc.dart';
+import 'create_new_collection_page.dart';
 
 class CollectionsPage extends StatelessWidget {
   const CollectionsPage({super.key});
@@ -170,7 +171,14 @@ class _SectionHeader extends StatelessWidget {
           ),
         ),
         TextButton.icon(
-          onPressed: () {},
+          onPressed: () => Navigator.of(context).push(
+            MaterialPageRoute<bool>(
+              builder: (_) => BlocProvider.value(
+                value: context.read<CollectionsBloc>(),
+                child: const CreateNewCollectionPage(),
+              ),
+            ),
+          ),
           style: TextButton.styleFrom(
             foregroundColor: context.appColors.textSecondary,
             padding: const EdgeInsets.symmetric(horizontal: 8),
@@ -216,11 +224,7 @@ class _CollectionCard extends StatelessWidget {
                       color: Colors.white.withValues(alpha: .72),
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    child: Icon(
-                      _iconFor(collection.symbol),
-                      size: 20,
-                      color: AppColors.slate500,
-                    ),
+                    child: _CollectionSymbol(symbol: collection.symbol),
                   ),
                   if (collection.isPinned)
                     Icon(
@@ -274,14 +278,30 @@ class _CollectionCard extends StatelessWidget {
       ),
     );
   }
+}
 
-  IconData _iconFor(String symbol) {
+class _CollectionSymbol extends StatelessWidget {
+  const _CollectionSymbol({required this.symbol});
+
+  final String symbol;
+
+  @override
+  Widget build(BuildContext context) {
+    final legacyIcon = _legacyIconFor(symbol);
+    if (legacyIcon != null) {
+      return Icon(legacyIcon, size: 20, color: AppColors.slate500);
+    }
+    return Center(child: Text(symbol, style: const TextStyle(fontSize: 20)));
+  }
+
+  IconData? _legacyIconFor(String symbol) {
     return switch (symbol) {
       'focus' => Icons.center_focus_strong_outlined,
       'spark' => Icons.auto_awesome_outlined,
       'bookmark' => Icons.bookmark_border_rounded,
       'play' => Icons.play_circle_outline_rounded,
-      _ => Icons.folder_outlined,
+      'folder' => Icons.folder_outlined,
+      _ => null,
     };
   }
 }

@@ -7,7 +7,9 @@ import 'package:flutter_quill/flutter_quill.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:snap_note/core/theme/app_theme.dart';
 import 'package:snap_note/features/collections/domain/entities/folio_collection.dart';
+import 'package:snap_note/features/collections/domain/entities/new_collection.dart';
 import 'package:snap_note/features/collections/domain/repositories/collections_repository.dart';
+import 'package:snap_note/features/collections/domain/usecases/create_collection.dart';
 import 'package:snap_note/features/collections/domain/usecases/watch_collections.dart';
 import 'package:snap_note/features/collections/presentation/bloc/collections_bloc.dart';
 import 'package:snap_note/features/home/presentation/pages/home_page.dart';
@@ -57,6 +59,9 @@ class _WidgetLibraryRepository implements LibraryRepository {
 }
 
 class _WidgetCollectionsRepository implements CollectionsRepository {
+  @override
+  Future<int> createCollection(NewCollection collection) async => 2;
+
   @override
   Stream<List<FolioCollection>> watchCollections() => Stream.value(const [
     FolioCollection(
@@ -117,6 +122,7 @@ void main() {
               BlocProvider(
                 create: (_) => CollectionsBloc(
                   WatchCollections(_WidgetCollectionsRepository()),
+                  CreateCollection(_WidgetCollectionsRepository()),
                 )..add(const CollectionsStarted()),
               ),
             ],

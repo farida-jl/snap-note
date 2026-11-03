@@ -4,6 +4,27 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:snap_note/core/database/app_database.dart';
 
 void main() {
+  test('creates a pinned emoji collection', () async {
+    final database = AppDatabase(NativeDatabase.memory());
+    addTearDown(database.close);
+
+    final id = await database.insertCollection(
+      title: '  Quiet inspiration  ',
+      description: '  Ideas worth revisiting  ',
+      symbol: '🌿',
+      isPinned: true,
+    );
+
+    final collection = await (database.select(
+      database.collections,
+    )..where((row) => row.id.equals(id))).getSingle();
+    expect(collection.title, 'Quiet inspiration');
+    expect(collection.description, 'Ideas worth revisiting');
+    expect(collection.symbol, '🌿');
+    expect(collection.isPinned, isTrue);
+    expect(collection.itemCount, 0);
+  });
+
   test('saves a Markdown note to Read Later by default', () async {
     final database = AppDatabase(NativeDatabase.memory());
     addTearDown(database.close);

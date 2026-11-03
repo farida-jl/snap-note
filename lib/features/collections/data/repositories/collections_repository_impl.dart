@@ -1,4 +1,5 @@
 import '../../domain/entities/folio_collection.dart';
+import '../../domain/entities/new_collection.dart';
 import '../../domain/repositories/collections_repository.dart';
 import '../datasources/collections_local_data_source.dart';
 
@@ -6,6 +7,10 @@ class CollectionsRepositoryImpl implements CollectionsRepository {
   const CollectionsRepositoryImpl(this._localDataSource);
 
   final CollectionsLocalDataSource _localDataSource;
+
+  @override
+  Future<int> createCollection(NewCollection collection) =>
+      _localDataSource.createCollection(collection);
 
   @override
   Stream<List<FolioCollection>> watchCollections() {
