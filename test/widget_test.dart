@@ -84,6 +84,16 @@ class _WidgetPocketLinkRepository implements PocketLinkRepository {
 
 class _WidgetNoteRepository implements NoteRepository {
   final savedDrafts = <NoteDraft>[];
+  final deletedIds = <int>[];
+  final updatedDrafts = <int, NoteDraft>{};
+
+  @override
+  Future<void> delete(int id) async => deletedIds.add(id);
+
+  @override
+  Future<void> update(int id, NoteDraft draft) async {
+    updatedDrafts[id] = draft;
+  }
 
   @override
   Future<int> save(NoteDraft draft) async {
@@ -137,6 +147,49 @@ void main() {
     expect(find.text('Make room for deep work'), findsOneWidget);
     expect(find.text('A practical guide to deep work'), findsOneWidget);
     expect(find.text('Build a ritual for focus'), findsOneWidget);
+
+    await tester.tap(find.byKey(const ValueKey('note-card-1')));
+    await tester.pumpAndSettle();
+    expect(find.text('Note'), findsOneWidget);
+    expect(find.text('NOV 2, 2026  ·  9:12 AM'), findsOneWidget);
+    expect(find.byTooltip('More options'), findsOneWidget);
+    final noteDetailEditor = tester.widget<QuillEditor>(
+      find.byKey(const ValueKey('note-content-field')),
+    );
+    expect(
+      noteDetailEditor.controller.document.toPlainText(),
+      contains('Protect the first hour. Make space to think.'),
+    );
+    expect(find.byKey(const ValueKey('note-content-toolbar')), findsNothing);
+    await tester.tap(find.byKey(const ValueKey('note-title-field')));
+    await tester.pumpAndSettle();
+    final editTitleField = tester.widget<TextField>(
+      find.byKey(const ValueKey('note-title-field')),
+    );
+    expect(editTitleField.controller?.text, 'Make room for deep work');
+    await tester.enterText(
+      find.byKey(const ValueKey('note-title-field')),
+      'Make more room for deep work',
+    );
+    await tester.tap(find.byKey(const ValueKey('save-note-button')));
+    await tester.pumpAndSettle();
+    expect(
+      noteRepository.updatedDrafts[1]?.title,
+      'Make more room for deep work',
+    );
+    expect(noteRepository.updatedDrafts[1]?.collectionId, 1);
+    expect(find.text('Note updated.'), findsOneWidget);
+    await tester.tap(find.byTooltip('Close'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const ValueKey('note-card-1')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('note-detail-more-button')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('note-detail-delete-option')));
+    await tester.pumpAndSettle();
+    expect(noteRepository.deletedIds, [1]);
+    expect(find.text('Note deleted.'), findsOneWidget);
 
     await tester.tap(find.byTooltip('Capture a new idea'));
     await tester.pumpAndSettle();
@@ -252,25 +305,27 @@ void main() {
     await tester.tap(find.text('Write a note'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Create note'), findsOneWidget);
-    expect(find.text('A thought, kept close.'), findsOneWidget);
+    expect(find.text('Note'), findsOneWidget);
     expect(find.byKey(const ValueKey('note-content-field')), findsOneWidget);
-    expect(
-      find.byKey(const ValueKey('note-collection-assignment')),
-      findsOneWidget,
-    );
-    expect(find.text('Read Later'), findsOneWidget);
-    expect(find.byTooltip('Preview note'), findsNothing);
-    expect(find.byTooltip('Bold'), findsOneWidget);
+    expect(find.byKey(const ValueKey('note-content-toolbar')), findsNothing);
 
-    final collectionAssignment = find.byKey(
-      const ValueKey('note-collection-assignment'),
-    );
-    await tester.ensureVisible(collectionAssignment);
-    await tester.tap(collectionAssignment);
+    final noteContentField = find.byKey(const ValueKey('note-content-field'));
+    await tester.ensureVisible(noteContentField);
+    await tester.tap(noteContentField);
+    await tester.pump();
+    expect(find.byKey(const ValueKey('note-content-toolbar')), findsOneWidget);
+    addTearDown(tester.view.resetViewInsets);
+    tester.view.viewInsets = const FakeViewPadding(bottom: 300);
     await tester.pumpAndSettle();
-    expect(find.byKey(const ValueKey('collection-option-1')), findsOneWidget);
-    await tester.tap(find.byKey(const ValueKey('collection-option-1')));
+    final editorBox = tester.renderObject<RenderBox>(noteContentField);
+    final editorBottom = editorBox
+        .localToGlobal(Offset(0, editorBox.size.height))
+        .dy;
+    final keyboardTop =
+        tester.view.physicalSize.height / tester.view.devicePixelRatio -
+        tester.view.viewInsets.bottom / tester.view.devicePixelRatio;
+    expect(editorBottom, lessThanOrEqualTo(keyboardTop));
+    tester.view.resetViewInsets();
     await tester.pumpAndSettle();
 
     await tester.enterText(
@@ -295,7 +350,7 @@ void main() {
 
     expect(noteRepository.savedDrafts, hasLength(1));
     expect(noteRepository.savedDrafts.single.title, 'Make room for deep work');
-    expect(noteRepository.savedDrafts.single.collectionId, 1);
+    expect(noteRepository.savedDrafts.single.collectionId, isNull);
     final savedDocument = Document.fromJson(
       jsonDecode(noteRepository.savedDrafts.single.markdown) as List,
     );

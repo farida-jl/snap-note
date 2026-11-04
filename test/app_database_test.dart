@@ -47,6 +47,78 @@ void main() {
     expect(readLater.itemCount, 1);
   });
 
+  test('deletes a note and updates its collection', () async {
+    final database = AppDatabase(NativeDatabase.memory());
+    addTearDown(database.close);
+    final collectionId = await database.insertCollection(
+      title: 'Thoughts',
+      description: 'Notes to revisit',
+      symbol: '💭',
+      isPinned: false,
+    );
+    final noteId = await database.insertNote(
+      title: 'Temporary note',
+      markdown: '[{"insert":"Delete me\\n"}]',
+      collectionId: collectionId,
+    );
+
+    await database.deleteNote(noteId);
+
+    final note = await (database.select(
+      database.savedItems,
+    )..where((row) => row.id.equals(noteId))).getSingleOrNull();
+    final collection = await (database.select(
+      database.collections,
+    )..where((row) => row.id.equals(collectionId))).getSingle();
+    expect(note, equals(null));
+    expect(collection.itemCount, 0);
+    expect(collection.updatedLabel, 'Updated just now');
+  });
+
+  test('updates a note and moves it between collections', () async {
+    final database = AppDatabase(NativeDatabase.memory());
+    addTearDown(database.close);
+    final sourceId = await database.insertCollection(
+      title: 'Inbox',
+      description: 'New notes',
+      symbol: '📥',
+      isPinned: false,
+    );
+    final targetId = await database.insertCollection(
+      title: 'Writing',
+      description: 'Drafts in progress',
+      symbol: '✍️',
+      isPinned: false,
+    );
+    final noteId = await database.insertNote(
+      title: 'First title',
+      markdown: '[{"insert":"First draft\\n"}]',
+      collectionId: sourceId,
+    );
+
+    await database.updateNote(
+      id: noteId,
+      title: '  Revised title  ',
+      markdown: '[{"insert":"Revised draft\\n"}]',
+      collectionId: targetId,
+    );
+
+    final note = await (database.select(
+      database.savedItems,
+    )..where((row) => row.id.equals(noteId))).getSingle();
+    final source = await (database.select(
+      database.collections,
+    )..where((row) => row.id.equals(sourceId))).getSingle();
+    final target = await (database.select(
+      database.collections,
+    )..where((row) => row.id.equals(targetId))).getSingle();
+    expect(note.title, 'Revised title');
+    expect(note.markdown, contains('Revised draft'));
+    expect(note.collectionId, targetId);
+    expect(source.itemCount, 0);
+    expect(target.itemCount, 1);
+  });
+
   test('saves a pocket link and updates its collection', () async {
     final database = AppDatabase(NativeDatabase.memory());
     addTearDown(database.close);

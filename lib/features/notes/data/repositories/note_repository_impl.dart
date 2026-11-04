@@ -15,4 +15,17 @@ class NoteRepositoryImpl implements NoteRepository {
       collectionId: draft.collectionId,
     );
   }
+
+  @override
+  Future<void> delete(int id) => _localDataSource.delete(id);
+
+  @override
+  Future<void> update(int id, NoteDraft draft) {
+    return _localDataSource.update(
+      id: id,
+      title: draft.title.trim(),
+      markdown: draft.markdown.trim(),
+      collectionId: draft.collectionId,
+    );
+  }
 }

@@ -1,51 +1,55 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_quill/flutter_quill.dart';
-import 'package:snap_note/shared/widgets/input_field/input_field.dart';
-import 'package:snap_note/shared/widgets/navigation_bar/standart_nav_bar.dart';
 
 import '../../../../core/theme/app_theme.dart';
-import '../../../../shared/widgets/collection_assignment.dart';
-import '../../../../shared/widgets/type_badge.dart';
-import '../../../collections/domain/entities/folio_collection.dart';
-import '../../../collections/presentation/bloc/collections_bloc.dart';
-import '../../../library/domain/entities/library_item.dart';
+import '../../../../shared/widgets/navigation_bar/standart_nav_bar.dart';
 import '../../domain/entities/note_draft.dart';
-import '../../domain/usecases/save_note.dart';
 import 'quill_editor_page.dart';
 
 class NoteEditorPage extends StatefulWidget {
   const NoteEditorPage({
-    required this.saveNote,
+    required this.onSubmit,
     this.initialTitle = '',
     this.initialMarkdown = '',
+    this.initialCollectionId,
     this.createdAt,
+    this.isExistingNote = false,
+    this.onDelete,
     super.key,
   });
 
-  final SaveNote saveNote;
+  final Future<void> Function(NoteDraft draft) onSubmit;
   final String initialTitle;
   final String initialMarkdown;
+  final int? initialCollectionId;
   final DateTime? createdAt;
+  final bool isExistingNote;
+  final Future<void> Function()? onDelete;
 
   @override
   State<NoteEditorPage> createState() => _NoteEditorPageState();
 }
 
 class _NoteEditorPageState extends State<NoteEditorPage> {
+  final _titleFocusNode = FocusNode();
   final _bodyFocusNode = FocusNode();
   final _bodyScrollController = ScrollController();
 
   late final TextEditingController _titleController;
   late final QuillController _bodyController;
-  late final String _initialBodyDelta;
   late final DateTime _createdAt;
+  late String _savedTitle;
+  late String _savedBodyDelta;
 
+  bool _isEditing = false;
   bool _isDirty = false;
   bool _isSubmitting = false;
-  int? _selectedCollectionId;
+  bool _isDeleting = false;
+
+  bool get _isNewNote => !widget.isExistingNote;
+  bool get _bodyHasFocus => _bodyFocusNode.hasFocus;
 
   @override
   void initState() {
@@ -54,55 +58,116 @@ class _NoteEditorPageState extends State<NoteEditorPage> {
     _bodyController = QuillController(
       document: _documentFromStoredContent(widget.initialMarkdown),
       selection: const TextSelection.collapsed(offset: 0),
+      readOnly: widget.isExistingNote,
     );
-    _initialBodyDelta = _encodeDocument(_bodyController.document);
     _createdAt = widget.createdAt ?? DateTime.now();
-    _titleController.addListener(_handleTitleChanged);
-    _bodyController.addListener(_handleBodyChanged);
+    _savedTitle = widget.initialTitle;
+    _savedBodyDelta = _encodeDocument(_bodyController.document);
+    _isEditing = _isNewNote;
+    _titleController.addListener(_refreshDirtyState);
+    _bodyController.addListener(_refreshDirtyState);
+    _titleFocusNode.addListener(_handleFocusChanged);
+    _bodyFocusNode.addListener(_handleBodyFocusChanged);
   }
 
   @override
   void dispose() {
     _titleController
-      ..removeListener(_handleTitleChanged)
+      ..removeListener(_refreshDirtyState)
       ..dispose();
     _bodyController
-      ..removeListener(_handleBodyChanged)
+      ..removeListener(_refreshDirtyState)
       ..dispose();
-    _bodyFocusNode.dispose();
+    _titleFocusNode
+      ..removeListener(_handleFocusChanged)
+      ..dispose();
+    _bodyFocusNode
+      ..removeListener(_handleBodyFocusChanged)
+      ..dispose();
     _bodyScrollController.dispose();
     super.dispose();
   }
 
-  void _handleTitleChanged() {
-    _refreshDirtyState();
+  void _handleFocusChanged() {
+    if (mounted) setState(() {});
   }
 
-  void _handleBodyChanged() {
-    _refreshDirtyState();
+  void _handleBodyFocusChanged() {
+    if (_bodyHasFocus && _bodyController.readOnly) {
+      _bodyController.readOnly = false;
+      _isEditing = true;
+    }
+    if (mounted) setState(() {});
   }
 
   void _refreshDirtyState() {
     final changed =
-        _titleController.text != widget.initialTitle ||
-        _encodeDocument(_bodyController.document) != _initialBodyDelta;
+        _titleController.text != _savedTitle ||
+        _encodeDocument(_bodyController.document) != _savedBodyDelta;
     if (changed != _isDirty && mounted) setState(() => _isDirty = changed);
   }
 
-  Future<void> _submit() async {
-    if (_isSubmitting || _titleController.text.trim().isEmpty) return;
+  void _beginTitleEditing() {
+    if (!_isEditing) setState(() => _isEditing = true);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _titleFocusNode.requestFocus();
+    });
+  }
+
+  void _beginBodyEditing() {
+    if (!_bodyController.readOnly) return;
+    setState(() {
+      _isEditing = true;
+      _bodyController.readOnly = false;
+    });
+  }
+
+  Future<void> _finishOrSubmit() async {
+    if (_isSubmitting || _isDeleting) return;
+    if (!_isDirty && widget.isExistingNote) {
+      _finishEditing();
+      return;
+    }
+
+    final title = _titleController.text.trim();
+    if (title.isEmpty) {
+      _beginTitleEditing();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Add a title before saving.')),
+      );
+      return;
+    }
+
     setState(() => _isSubmitting = true);
     FocusScope.of(context).unfocus();
-
+    final bodyDelta = _encodeDocument(_bodyController.document);
     try {
-      await widget.saveNote(
+      await widget.onSubmit(
         NoteDraft(
-          title: _titleController.text,
-          markdown: _encodeDocument(_bodyController.document),
-          collectionId: _selectedCollectionId,
+          title: title,
+          markdown: bodyDelta,
+          collectionId: widget.initialCollectionId,
         ),
       );
-      if (mounted) Navigator.of(context).pop(true);
+      if (!mounted) return;
+
+      if (_isNewNote) {
+        Navigator.of(context).pop(true);
+        return;
+      }
+
+      _savedTitle = title;
+      _savedBodyDelta = bodyDelta;
+      _titleController.value = _titleController.value.copyWith(text: title);
+      setState(() {
+        _isDirty = false;
+        _isSubmitting = false;
+        _isEditing = false;
+        _bodyController.readOnly = true;
+      });
+      ScaffoldMessenger.of(context)
+        ..clearSnackBars()
+        ..showSnackBar(const SnackBar(content: Text('Note updated.')));
     } catch (_) {
       if (!mounted) return;
       setState(() => _isSubmitting = false);
@@ -112,73 +177,158 @@ class _NoteEditorPageState extends State<NoteEditorPage> {
     }
   }
 
+  void _finishEditing() {
+    FocusScope.of(context).unfocus();
+    setState(() {
+      _isEditing = false;
+      _bodyController.readOnly = true;
+    });
+  }
+
+  Future<void> _openOptions() async {
+    final action = await showModalBottomSheet<_NoteAction>(
+      context: context,
+      showDragHandle: true,
+      backgroundColor: context.appColors.background,
+      builder: (sheetContext) => SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                key: const ValueKey('note-detail-edit-option'),
+                leading: const Icon(Icons.edit_outlined),
+                title: const Text('Edit'),
+                onTap: () => Navigator.of(sheetContext).pop(_NoteAction.edit),
+              ),
+              ListTile(
+                key: const ValueKey('note-detail-delete-option'),
+                leading: Icon(
+                  Icons.delete_outline_rounded,
+                  color: Theme.of(context).colorScheme.error,
+                ),
+                title: Text(
+                  'Delete',
+                  style: TextStyle(color: Theme.of(context).colorScheme.error),
+                ),
+                onTap: () => Navigator.of(sheetContext).pop(_NoteAction.delete),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+    if (!mounted) return;
+
+    switch (action) {
+      case _NoteAction.edit:
+        _beginTitleEditing();
+        return;
+      case _NoteAction.delete:
+        await _deleteNote();
+        return;
+      case null:
+        return;
+    }
+  }
+
+  Future<void> _deleteNote() async {
+    final onDelete = widget.onDelete;
+    if (onDelete == null || _isDeleting) return;
+    setState(() => _isDeleting = true);
+    try {
+      await onDelete();
+      if (mounted) Navigator.of(context).pop(true);
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _isDeleting = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Could not delete this note. Try again.')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
-    final collections = context.watch<CollectionsBloc>().state.collections;
-    final selectedCollection = _selectedCollection(collections);
 
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       backgroundColor: colors.background,
       body: SafeArea(
         child: Column(
           children: [
-            StandartNavigationBar(
-              title: widget.initialTitle.isEmpty ? 'Create note' : 'Edit note',
-            ),
+            StandartNavigationBar(title: 'Note', trailing: _buildTrailing()),
             Expanded(
-              child: SingleChildScrollView(
-                physics: const BouncingScrollPhysics(),
-                keyboardDismissBehavior:
-                    ScrollViewKeyboardDismissBehavior.onDrag,
-                padding: const EdgeInsets.fromLTRB(24, 0, 24, 20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _NoteMetadata(isDirty: _isDirty, createdAt: _createdAt),
-                    const SizedBox(height: 14),
-                    ValidateLabeledField(
-                      fieldKey: const ValueKey('note-title-field'),
-                      label: 'Title',
-                      hintText: 'Give this note a title',
-                      controller: _titleController,
-                      isRequired: true,
-                      textCapitalization: TextCapitalization.sentences,
-                      textInputAction: TextInputAction.next,
-                      onSubmitted: (_) => _bodyFocusNode.requestFocus(),
-                      validator: (value) => value.trim().isEmpty
-                          ? 'Add a title before saving.'
-                          : null,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SingleChildScrollView(
+                    physics: const BouncingScrollPhysics(),
+                    padding: const EdgeInsets.fromLTRB(10, 16, 10, 0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        TextField(
+                          key: const ValueKey('note-title-field'),
+                          controller: _titleController,
+                          focusNode: _titleFocusNode,
+                          readOnly: widget.isExistingNote && !_isEditing,
+                          onTap: widget.isExistingNote && !_isEditing
+                              ? _beginTitleEditing
+                              : null,
+                          maxLines: null,
+                          minLines: 1,
+                          textCapitalization: TextCapitalization.sentences,
+                          textInputAction: TextInputAction.next,
+                          onSubmitted: (_) => _bodyFocusNode.requestFocus(),
+                          decoration: InputDecoration.collapsed(
+                            hintText: 'Note title',
+                            hintStyle: TextStyle(color: colors.textSecondary),
+                          ),
+                          style: TextStyle(
+                            fontFamily: 'Lora',
+                            fontSize: 32,
+                            height: 1.18,
+                            letterSpacing: -.8,
+                            color: colors.textPrimary,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        Text(
+                          _formatDateTime(_createdAt),
+                          key: const ValueKey('note-detail-date-time'),
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: colors.textSecondary,
+                          ),
+                        ),
+                        if (!_bodyHasFocus) ... [
+                          const SizedBox(height: 2),
+                          const Divider(),
+                        ],
+                        const SizedBox(height: 6),
+                      ],
                     ),
-                    const SizedBox(height: 14),
-                    CollectionAssignment(
-                      selectedCollection: selectedCollection,
-                      collections: collections,
-                      assignmentKey: const ValueKey(
-                        'note-collection-assignment',
-                      ),
-                      onSelected: (collection) =>
-                          setState(() => _selectedCollectionId = collection.id),
-                    ),
-                    const SizedBox(height: 14),
-                    SizedBox(
-                      height: 400,
+                  ),
+                  Expanded(
+                    child: Listener(
+                      onPointerDown: (_) => _beginBodyEditing(),
                       child: QuillEditorPage(
                         editorKey: const ValueKey('note-content-field'),
                         toolbarKey: const ValueKey('note-content-toolbar'),
                         controller: _bodyController,
                         focusNode: _bodyFocusNode,
                         scrollController: _bodyScrollController,
+                        showToolbar: _bodyHasFocus,
+                        placeholder: 'Start writing…',
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-            ),
-            _SaveAction(
-              canSave: _titleController.text.trim().isNotEmpty,
-              isSubmitting: _isSubmitting,
-              onSave: _submit,
             ),
           ],
         ),
@@ -186,137 +336,64 @@ class _NoteEditorPageState extends State<NoteEditorPage> {
     );
   }
 
-  FolioCollection? _selectedCollection(List<FolioCollection> collections) {
-    if (collections.isEmpty) return null;
-    for (final collection in collections) {
-      if (collection.id == _selectedCollectionId) return collection;
+  Widget _buildTrailing() {
+    if (_isSubmitting || _isDeleting) {
+      return const Padding(
+        padding: EdgeInsets.all(12),
+        child: SizedBox.square(
+          dimension: 20,
+          child: CircularProgressIndicator(strokeWidth: 2),
+        ),
+      );
     }
-    for (final collection in collections) {
-      if (collection.title == 'Read Later') return collection;
+
+    if (_isNewNote || _isEditing || _isDirty) {
+      return IconButton(
+        key: const ValueKey('save-note-button'),
+        tooltip: 'Save note',
+        onPressed: _finishOrSubmit,
+        icon: const Icon(Icons.check_rounded),
+      );
     }
-    return null;
+
+    return IconButton(
+      key: const ValueKey('note-detail-more-button'),
+      tooltip: 'More options',
+      onPressed: _openOptions,
+      icon: const Icon(Icons.more_horiz_rounded),
+    );
   }
 }
 
+enum _NoteAction { edit, delete }
+
 Document _documentFromStoredContent(String content) {
-  if (content.isEmpty) return Document();
+  final storedContent = content.trim();
+  if (storedContent.isEmpty) return Document();
 
   try {
-    final decoded = jsonDecode(content);
+    final decoded = jsonDecode(storedContent);
     if (decoded is List) return Document.fromJson(decoded);
   } on FormatException {
     // Existing notes may contain plain text or legacy Markdown.
   }
 
-  return Document()..insert(0, content);
+  return Document()..insert(0, _plainTextFromMarkdown(storedContent));
+}
+
+String _plainTextFromMarkdown(String markdown) {
+  return markdown
+      .replaceAll(RegExp(r'(^|\n)\s{0,3}#{1,6}\s*'), r'$1')
+      .replaceAll(RegExp(r'(^|\n)\s*[-*+]\s+'), r'$1• ')
+      .replaceAll(RegExp(r'\*\*|__|~~|`'), '')
+      .trim();
 }
 
 String _encodeDocument(Document document) {
   return jsonEncode(document.toDelta().toJson());
 }
 
-class _NoteMetadata extends StatelessWidget {
-  const _NoteMetadata({required this.isDirty, required this.createdAt});
-
-  final bool isDirty;
-  final DateTime createdAt;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = context.appColors;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            TypeBadge(type: LibraryItemType.note),
-            Text(
-              isDirty ? 'Unsaved changes' : 'All changes saved',
-              style: Theme.of(
-                context,
-              ).textTheme.bodySmall?.copyWith(fontSize: 11),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        Text(
-          'A thought, kept close.',
-          style: TextStyle(
-            fontFamily: 'Lora',
-            fontSize: 29,
-            height: 1.15,
-            letterSpacing: -.7,
-            color: colors.primary,
-          ),
-        ),
-        const SizedBox(height: 10),
-        Text(
-          _formatCreatedAt(createdAt),
-          style: TextStyle(fontSize: 12, color: colors.textSecondary),
-        ),
-      ],
-    );
-  }
-}
-
-class _SaveAction extends StatelessWidget {
-  const _SaveAction({
-    required this.canSave,
-    required this.isSubmitting,
-    required this.onSave,
-  });
-
-  final bool canSave;
-  final bool isSubmitting;
-  final VoidCallback onSave;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = context.appColors;
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(24, 12, 24, 12),
-      color: colors.background,
-      child: Column(
-        children: [
-          SizedBox(
-            width: double.infinity,
-            height: 54,
-            child: FilledButton.icon(
-              key: const ValueKey('save-note-button'),
-              onPressed: canSave && !isSubmitting ? onSave : null,
-              style: FilledButton.styleFrom(
-                backgroundColor: colors.accent,
-                foregroundColor: colors.onAccent,
-                disabledBackgroundColor: colors.accent.withValues(alpha: .45),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              icon: isSubmitting
-                  ? SizedBox(
-                      width: 19,
-                      height: 19,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: colors.onAccent,
-                      ),
-                    )
-                  : Icon(Icons.check, color: context.appColors.success),
-              label: Text(
-                isSubmitting ? 'Saving…' : 'Save note',
-                style: const TextStyle(fontWeight: FontWeight.w600),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-String _formatCreatedAt(DateTime value) {
+String _formatDateTime(DateTime value) {
   const months = [
     'JAN',
     'FEB',
@@ -336,5 +413,6 @@ String _formatCreatedAt(DateTime value) {
       : (value.hour > 12 ? value.hour - 12 : value.hour);
   final minute = value.minute.toString().padLeft(2, '0');
   final period = value.hour >= 12 ? 'PM' : 'AM';
-  return '${months[value.month - 1]} ${value.day}, ${value.year}  ·  $hour:$minute $period';
+  return '${months[value.month - 1]} ${value.day}, ${value.year}  ·  '
+      '$hour:$minute $period';
 }

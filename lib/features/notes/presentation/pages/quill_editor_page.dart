@@ -44,12 +44,12 @@ class _QuillEditorExamplePageState extends State<QuillEditorExamplePage> {
           children: [
             Expanded(
               child: QuillEditorPage(
-                  controller: _controller,
-                  focusNode: _editorFocusNode,
-                  scrollController: _editorScrollController,
-                  toolbarKey: const ValueKey('quill-example-toolbar'),
-                  editorKey: const ValueKey('quill-example-editor'),
-                ),
+                controller: _controller,
+                focusNode: _editorFocusNode,
+                scrollController: _editorScrollController,
+                toolbarKey: const ValueKey('quill-example-toolbar'),
+                editorKey: const ValueKey('quill-example-editor'),
+              ),
             ),
             if (_deltaJson case final deltaJson?)
               Container(
@@ -83,6 +83,7 @@ class QuillEditorPage extends StatelessWidget {
     this.toolbarKey,
     this.editorKey,
     this.placeholder = 'Start writing…',
+    this.showToolbar = true,
     super.key,
   });
 
@@ -92,55 +93,58 @@ class QuillEditorPage extends StatelessWidget {
   final Key? toolbarKey;
   final Key? editorKey;
   final String placeholder;
+  final bool showToolbar;
 
   @override
   Widget build(BuildContext context) {
-    final colors = context.appColors;
-
-    return Container(
-      decoration: BoxDecoration(
-        color: colors.subtle,
-        border: Border.all(color: colors.border),     
-      ),
-      child: Column(
-        children: [
-          QuillSimpleToolbar(
-            key: toolbarKey,
-            controller: controller,
-            config: const QuillSimpleToolbarConfig(
-              sectionDividerSpace: 0,
-              multiRowsDisplay: false,
-              showFontFamily: false,
-              showFontSize: false,
-              showStrikeThrough: false,
-              showInlineCode: false,
-              showColorButton: false,
-              showBackgroundColorButton: false,
-              showAlignmentButtons: false,
-              showCodeBlock: false,
-              showIndent: false,
-              showSearchButton: false,
-              showSubscript: false,
-              showSuperscript: false,
-            ),
-          ),
-
-          Expanded(
-            child: QuillEditor(
-              key: editorKey,
-              controller: controller,
-              focusNode: focusNode,
-              scrollController: scrollController,
-              config: QuillEditorConfig(
-                expands: true,
-                showCursor: true,
-                padding: const EdgeInsets.fromLTRB(16, 36, 16, 16),
-                placeholder: placeholder,
+    return Column(
+      children: [
+        if (showToolbar)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 10),
+              decoration: BoxDecoration(
+                color: context.appColors.subtle,
+                border: Border.all(color: const Color(0xFF426071)),
+              ),
+              child: QuillSimpleToolbar(
+                key: toolbarKey,
+                controller: controller,
+                config: QuillSimpleToolbarConfig(
+                          color: context.appColors.subtle,
+                          sectionDividerSpace: 0,
+                          multiRowsDisplay: false,
+                          showFontFamily: false,
+                          showFontSize: false,
+                          showStrikeThrough: false,
+                          showInlineCode: false,
+                          showBackgroundColorButton: false,
+                          showAlignmentButtons: false,
+                          showCodeBlock: false,
+                          showIndent: false,
+                          showSearchButton: false,
+                          showSubscript: false,
+                          showSuperscript: false,
+                        ),
               ),
             ),
           ),
-        ],
-      ),
+        Expanded(
+          child: QuillEditor(
+            key: editorKey,
+            controller: controller,
+            focusNode: focusNode,
+            scrollController: scrollController,
+            config: QuillEditorConfig(
+              expands: true,
+              showCursor: true,
+              padding: EdgeInsets.fromLTRB(12, 24, 14, 12),
+              placeholder: placeholder,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

@@ -112,7 +112,11 @@ class _HomePageState extends State<HomePage> {
           MaterialPageRoute<void>(
             builder: (_) => BlocProvider.value(
               value: context.read<CollectionsBloc>(),
-              child: NoteEditorPage(saveNote: SaveNote(repository)),
+              child: NoteEditorPage(
+                onSubmit: (draft) async {
+                  await SaveNote(repository)(draft);
+                },
+              ),
             ),
           ),
         );

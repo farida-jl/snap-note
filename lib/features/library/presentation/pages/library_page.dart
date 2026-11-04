@@ -3,6 +3,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../../../core/theme/app_theme.dart';
+import '../../../notes/domain/repositories/note_repository.dart';
+import '../../../notes/domain/usecases/update_note.dart';
+import '../../../notes/presentation/pages/note_detail_page.dart';
 import '../../domain/entities/library_item.dart';
 import '../bloc/library_bloc.dart';
 import '../components/link_card.dart';
@@ -150,7 +153,7 @@ class _HomeHeader extends StatelessWidget {
             Text(
               'Room for ideas.',
               style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                color: context.appColors.primary,
+                color: AppColors.gold100,
                 fontSize: 40,
               ),
             ),
@@ -338,10 +341,30 @@ class _LibraryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return switch (item.type) {
-      LibraryItemType.note => NoteCard(item: item),
+      LibraryItemType.note => NoteCard(
+        item: item,
+        onTap: () => _openNote(context),
+      ),
       LibraryItemType.link => LinkCard(item: item),
       LibraryItemType.video => VideoCard(item: item),
     };
+  }
+
+  Future<void> _openNote(BuildContext context) async {
+    final noteRepository = context.read<NoteRepository>();
+    final deleted = await Navigator.of(context).push<bool>(
+      MaterialPageRoute<bool>(
+        builder: (_) => NoteDetailPage(
+          item: item,
+          onSubmit: (draft) => UpdateNote(noteRepository)(item.id, draft),
+          onDelete: () => noteRepository.delete(item.id),
+        ),
+      ),
+    );
+    if (deleted != true || !context.mounted) return;
+    ScaffoldMessenger.of(context)
+      ..clearSnackBars()
+      ..showSnackBar(const SnackBar(content: Text('Note deleted.')));
   }
 }
 

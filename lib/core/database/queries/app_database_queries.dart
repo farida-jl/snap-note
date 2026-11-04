@@ -109,6 +109,88 @@ extension AppDatabaseQueries on AppDatabase {
     });
   }
 
+  Future<void> deleteNote(int id) async {
+    await transaction(() async {
+      final note =
+          await (select(savedItems)
+                ..where((row) => row.id.equals(id) & row.type.equals('note')))
+              .getSingleOrNull();
+      if (note == null) throw StateError('Note $id does not exist.');
+
+      final collection = await (select(
+        collections,
+      )..where((row) => row.id.equals(note.collectionId))).getSingle();
+
+      await (delete(savedItems)..where((row) => row.id.equals(id))).go();
+      await (update(
+        collections,
+      )..where((row) => row.id.equals(note.collectionId))).write(
+        CollectionsCompanion(
+          itemCount: Value(
+            collection.itemCount > 0 ? collection.itemCount - 1 : 0,
+          ),
+          updatedLabel: const Value('Updated just now'),
+          updatedAt: Value(DateTime.now()),
+        ),
+      );
+    });
+  }
+
+  Future<void> updateNote({
+    required int id,
+    required String title,
+    required String markdown,
+    int? collectionId,
+  }) async {
+    await transaction(() async {
+      final note =
+          await (select(savedItems)
+                ..where((row) => row.id.equals(id) & row.type.equals('note')))
+              .getSingleOrNull();
+      if (note == null) throw StateError('Note $id does not exist.');
+
+      final targetCollectionId = collectionId ?? note.collectionId;
+      await (update(savedItems)..where((row) => row.id.equals(id))).write(
+        SavedItemsCompanion(
+          collectionId: Value(targetCollectionId),
+          title: Value(title.trim()),
+          markdown: Value(markdown.trim()),
+        ),
+      );
+
+      if (targetCollectionId != note.collectionId) {
+        final oldCollection = await (select(
+          collections,
+        )..where((row) => row.id.equals(note.collectionId))).getSingle();
+        final newCollection = await (select(
+          collections,
+        )..where((row) => row.id.equals(targetCollectionId))).getSingle();
+        final updatedAt = DateTime.now();
+
+        await (update(
+          collections,
+        )..where((row) => row.id.equals(note.collectionId))).write(
+          CollectionsCompanion(
+            itemCount: Value(
+              oldCollection.itemCount > 0 ? oldCollection.itemCount - 1 : 0,
+            ),
+            updatedLabel: const Value('Updated just now'),
+            updatedAt: Value(updatedAt),
+          ),
+        );
+        await (update(
+          collections,
+        )..where((row) => row.id.equals(targetCollectionId))).write(
+          CollectionsCompanion(
+            itemCount: Value(newCollection.itemCount + 1),
+            updatedLabel: const Value('Updated just now'),
+            updatedAt: Value(updatedAt),
+          ),
+        );
+      }
+    });
+  }
+
   Future<int> _ensureReadLaterCollection() async {
     final existing =
         await (select(collections)

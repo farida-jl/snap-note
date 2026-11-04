@@ -3,9 +3,10 @@ import 'package:flutter/material.dart';
 import '../../../core/theme/app_theme.dart';
 
 class StandartNavigationBar extends StatelessWidget {
-  const StandartNavigationBar({required this.title, super.key});
+  const StandartNavigationBar({required this.title, this.trailing, super.key});
 
   final String title;
+  final Widget? trailing;
 
   @override
   Widget build(BuildContext context) {
@@ -37,6 +38,8 @@ class StandartNavigationBar extends StatelessWidget {
               icon: Icon(Icons.chevron_left),
             ),
           ),
+          if (trailing case final trailing?)
+            Positioned(right: 0, child: trailing),
         ],
       ),
     );

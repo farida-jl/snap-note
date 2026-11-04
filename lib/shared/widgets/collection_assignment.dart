@@ -57,8 +57,18 @@ class CollectionAssignment extends StatelessWidget {
                       onPressed: () => Navigator.of(
                         sheetContext,
                       ).pop(_CollectionPickerAction.create),
-                      icon: const Icon(Icons.add_rounded, size: 18),
-                      label: const Text('New collection'),
+                      icon: const Icon(
+                        Icons.add_rounded,
+                        size: 18,
+                        color: AppColors.mint700,
+                      ),
+                      label: const Text(
+                        'New collection',
+                        style: TextStyle(
+                          color: AppColors.mint700,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ),
                   ],
                 ),
@@ -166,7 +176,7 @@ class CollectionAssignment extends StatelessWidget {
             width: double.infinity,
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: colors.subtle,
+              color: colors.background,
               border: Border.all(color: colors.border),
             ),
             child: Row(
@@ -297,13 +307,10 @@ class _CollectionOptionIcon extends StatelessWidget {
 
     return SizedBox.square(
       dimension: 40,
-      child: DecoratedBox(
-        decoration: BoxDecoration(color: context.appColors.subtle),
-        child: Center(
-          child: icon == null
-              ? Text(symbol, style: const TextStyle(fontSize: 22))
-              : Icon(icon, size: 22, color: context.appColors.primary),
-        ),
+      child: Center(
+        child: icon == null
+            ? Text(symbol, style: const TextStyle(fontSize: 22))
+            : Icon(icon, size: 22, color: context.appColors.primary),
       ),
     );
   }
