@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../../../core/theme/app_theme.dart';
-import '../../domain/entities/folio_collection.dart';
+import '../../domain/entities/collection_item.dart';
 import '../bloc/collections_bloc.dart';
 import 'create_new_collection_page.dart';
 
@@ -75,7 +75,7 @@ class CollectionsPage extends StatelessWidget {
 class _Introduction extends StatelessWidget {
   const _Introduction({required this.collections});
 
-  final List<FolioCollection> collections;
+  final List<CollectionItem> collections;
 
   @override
   Widget build(BuildContext context) {
@@ -195,7 +195,7 @@ class _SectionHeader extends StatelessWidget {
 class _CollectionCard extends StatelessWidget {
   const _CollectionCard({required this.collection});
 
-  final FolioCollection collection;
+  final CollectionItem collection;
 
   @override
   Widget build(BuildContext context) {

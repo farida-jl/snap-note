@@ -74,6 +74,92 @@ extension AppDatabaseQueries on AppDatabase {
     });
   }
 
+  Future<void> deletePocketLink(int id) async {
+    await transaction(() async {
+      final link =
+          await (select(savedItems)
+                ..where((row) => row.id.equals(id) & row.type.equals('link')))
+              .getSingleOrNull();
+      if (link == null) throw StateError('Pocket link $id does not exist.');
+
+      final collection = await (select(
+        collections,
+      )..where((row) => row.id.equals(link.collectionId))).getSingle();
+
+      await (delete(savedItems)..where((row) => row.id.equals(id))).go();
+      await (update(
+        collections,
+      )..where((row) => row.id.equals(link.collectionId))).write(
+        CollectionsCompanion(
+          itemCount: Value(
+            collection.itemCount > 0 ? collection.itemCount - 1 : 0,
+          ),
+          updatedLabel: const Value('Updated just now'),
+          updatedAt: Value(DateTime.now()),
+        ),
+      );
+    });
+  }
+
+  Future<void> updatePocketLink({
+    required int id,
+    required String url,
+    required String title,
+    required String description,
+    required String sourceHost,
+    int? collectionId,
+  }) async {
+    await transaction(() async {
+      final link =
+          await (select(savedItems)
+                ..where((row) => row.id.equals(id) & row.type.equals('link')))
+              .getSingleOrNull();
+      if (link == null) throw StateError('Pocket link $id does not exist.');
+
+      final targetCollectionId = collectionId ?? link.collectionId;
+      await (update(savedItems)..where((row) => row.id.equals(id))).write(
+        SavedItemsCompanion(
+          collectionId: Value(targetCollectionId),
+          title: Value(title.trim()),
+          description: Value(description.trim()),
+          source: Value(sourceHost),
+          url: Value(url.trim()),
+        ),
+      );
+
+      if (targetCollectionId != link.collectionId) {
+        final oldCollection = await (select(
+          collections,
+        )..where((row) => row.id.equals(link.collectionId))).getSingle();
+        final newCollection = await (select(
+          collections,
+        )..where((row) => row.id.equals(targetCollectionId))).getSingle();
+        final updatedAt = DateTime.now();
+
+        await (update(
+          collections,
+        )..where((row) => row.id.equals(link.collectionId))).write(
+          CollectionsCompanion(
+            itemCount: Value(
+              oldCollection.itemCount > 0 ? oldCollection.itemCount - 1 : 0,
+            ),
+            updatedLabel: const Value('Updated just now'),
+            updatedAt: Value(updatedAt),
+          ),
+        );
+        await (update(
+          collections,
+        )..where((row) => row.id.equals(targetCollectionId))).write(
+          CollectionsCompanion(
+            itemCount: Value(newCollection.itemCount + 1),
+            updatedLabel: const Value('Updated just now'),
+            updatedAt: Value(updatedAt),
+          ),
+        );
+      }
+    });
+  }
+
   Future<int> insertNote({
     required String title,
     required String markdown,

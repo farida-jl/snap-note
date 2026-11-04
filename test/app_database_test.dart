@@ -173,6 +173,84 @@ void main() {
     expect(collection.updatedLabel, 'Updated just now');
   });
 
+  test('updates a pocket link and moves it between collections', () async {
+    final database = AppDatabase(NativeDatabase.memory());
+    addTearDown(database.close);
+    final sourceId = await database.insertCollection(
+      title: 'Inbox',
+      description: 'New links',
+      symbol: 'inbox',
+      isPinned: false,
+    );
+    final targetId = await database.insertCollection(
+      title: 'Focus',
+      description: 'Deep work references',
+      symbol: 'focus',
+      isPinned: false,
+    );
+    final linkId = await database.insertPocketLink(
+      url: 'https://example.com/first',
+      title: 'First title',
+      description: 'First description',
+      sourceHost: 'example.com',
+      collectionId: sourceId,
+    );
+
+    await database.updatePocketLink(
+      id: linkId,
+      url: 'https://todoist.com/deep-work',
+      title: '  Revised title  ',
+      description: 'Revised description',
+      sourceHost: 'todoist.com',
+      collectionId: targetId,
+    );
+
+    final link = await (database.select(
+      database.savedItems,
+    )..where((row) => row.id.equals(linkId))).getSingle();
+    final source = await (database.select(
+      database.collections,
+    )..where((row) => row.id.equals(sourceId))).getSingle();
+    final target = await (database.select(
+      database.collections,
+    )..where((row) => row.id.equals(targetId))).getSingle();
+    expect(link.title, 'Revised title');
+    expect(link.source, 'todoist.com');
+    expect(link.collectionId, targetId);
+    expect(source.itemCount, 0);
+    expect(target.itemCount, 1);
+  });
+
+  test('deletes a pocket link and updates its collection', () async {
+    final database = AppDatabase(NativeDatabase.memory());
+    addTearDown(database.close);
+    final collectionId = await database.insertCollection(
+      title: 'Reading',
+      description: 'Links to revisit',
+      symbol: 'book',
+      isPinned: false,
+    );
+    final linkId = await database.insertPocketLink(
+      url: 'https://example.com/delete-me',
+      title: 'Temporary link',
+      description: 'Delete this link.',
+      sourceHost: 'example.com',
+      collectionId: collectionId,
+    );
+
+    await database.deletePocketLink(linkId);
+
+    final link = await (database.select(
+      database.savedItems,
+    )..where((row) => row.id.equals(linkId))).getSingleOrNull();
+    final collection = await (database.select(
+      database.collections,
+    )..where((row) => row.id.equals(collectionId))).getSingle();
+    expect(link, equals(null));
+    expect(collection.itemCount, 0);
+    expect(collection.updatedLabel, 'Updated just now');
+  });
+
   test('creates Read Later and always stores new pocket links there', () async {
     final database = AppDatabase(NativeDatabase.memory());
     addTearDown(database.close);

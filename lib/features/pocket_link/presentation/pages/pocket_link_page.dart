@@ -6,12 +6,16 @@ import 'package:snap_note/shared/widgets/navigation_bar/standart_nav_bar.dart';
 
 import '../../../../core/theme/app_theme.dart';
 import '../../../../shared/widgets/collection_assignment.dart';
-import '../../../collections/domain/entities/folio_collection.dart';
+import '../../../collections/domain/entities/collection_item.dart';
 import '../../../collections/presentation/bloc/collections_bloc.dart';
 import '../bloc/pocket_link_bloc.dart';
 
 class PocketLinkPage extends StatefulWidget {
-  const PocketLinkPage({super.key});
+  const PocketLinkPage({super.key}) : isEditing = false;
+
+  const PocketLinkPage.edit({super.key}) : isEditing = true;
+
+  final bool isEditing;
 
   @override
   State<PocketLinkPage> createState() => _PocketLinkPageState();
@@ -47,7 +51,7 @@ class _PocketLinkPageState extends State<PocketLinkPage> {
       listenWhen: (previous, current) => previous.status != current.status,
       listener: (context, state) {
         if (state.status == PocketLinkStatus.success) {
-          Navigator.of(context).pop(true);
+          Navigator.of(context).pop(widget.isEditing ? state.draft : true);
         } else if (state.status == PocketLinkStatus.failure) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -61,7 +65,11 @@ class _PocketLinkPageState extends State<PocketLinkPage> {
         body: SafeArea(
           child: Column(
             children: [
-              StandartNavigationBar(title: 'Create pocket link'),
+              StandartNavigationBar(
+                title: widget.isEditing
+                    ? 'Edit pocket link'
+                    : 'Create pocket link',
+              ),
               Expanded(
                 child: SingleChildScrollView(
                   physics: const BouncingScrollPhysics(),
@@ -136,7 +144,7 @@ class _PocketLinkPageState extends State<PocketLinkPage> {
                   ),
                 ),
               ),
-              const _SaveActions(),
+              _SaveActions(isEditing: widget.isEditing),
             ],
           ),
         ),
@@ -156,8 +164,8 @@ class _PocketLinkPageState extends State<PocketLinkPage> {
     return isValid ? null : 'Enter a valid URL, such as https://example.com.';
   }
 
-  FolioCollection? _selectedCollection(
-    List<FolioCollection> collections,
+  CollectionItem? _selectedCollection(
+    List<CollectionItem> collections,
     int? selectedCollectionId,
   ) {
     for (final collection in collections) {
@@ -236,7 +244,9 @@ class _Introduction extends StatelessWidget {
 }
 
 class _SaveActions extends StatelessWidget {
-  const _SaveActions();
+  const _SaveActions({required this.isEditing});
+
+  final bool isEditing;
 
   @override
   Widget build(BuildContext context) {
@@ -265,6 +275,7 @@ class _SaveActions extends StatelessWidget {
                 width: double.infinity,
                 height: 54,
                 child: FilledButton(
+                  key: const ValueKey('pocket-link-submit-button'),
                   onPressed: state.isValid && !isSaving
                       ? () => context.read<PocketLinkBloc>().add(
                           const PocketLinkSubmitted(),
@@ -301,7 +312,9 @@ class _SaveActions extends StatelessWidget {
                             ),
                             const SizedBox(width: 9),
                             Text(
-                              'Save pocket link',
+                              isEditing
+                                  ? 'Update pocket link'
+                                  : 'Save pocket link',
                               style: TextStyle(
                                 fontSize: 15,
                                 fontWeight: FontWeight.w600,

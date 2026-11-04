@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:snap_note/core/theme/app_theme.dart';
-import 'package:snap_note/features/collections/domain/entities/folio_collection.dart';
+import 'package:snap_note/features/collections/domain/entities/collection_item.dart';
 import 'package:snap_note/features/collections/domain/entities/new_collection.dart';
 import 'package:snap_note/features/collections/domain/repositories/collections_repository.dart';
 import 'package:snap_note/features/collections/domain/usecases/create_collection.dart';
@@ -20,7 +20,7 @@ class _PageCollectionsRepository implements CollectionsRepository {
   }
 
   @override
-  Stream<List<FolioCollection>> watchCollections() => const Stream.empty();
+  Stream<List<CollectionItem>> watchCollections() => const Stream.empty();
 }
 
 void _expectSquareIconButton(WidgetTester tester, String key) {

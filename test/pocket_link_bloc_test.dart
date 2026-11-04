@@ -8,10 +8,16 @@ class _FakePocketLinkRepository implements PocketLinkRepository {
   PocketLinkDraft? savedDraft;
 
   @override
+  Future<void> delete(int id) async {}
+
+  @override
   Future<int> save(PocketLinkDraft draft) async {
     savedDraft = draft;
     return 4;
   }
+
+  @override
+  Future<void> update(int id, PocketLinkDraft draft) async {}
 }
 
 void main() {
@@ -96,4 +102,59 @@ void main() {
     expect(bloc.state.isValid, isFalse);
     expect(repository.savedDraft, isNull);
   });
+
+  test(
+    'starts edit mode with existing values and updates the same link',
+    () async {
+      PocketLinkDraft? updatedDraft;
+      final bloc = PocketLinkBloc.edit(
+        initialDraft: const PocketLinkDraft(
+          url: 'https://todoist.com/deep-work',
+          title: 'Deep work guide',
+          description: 'Useful context',
+          collectionId: 7,
+        ),
+        onSubmit: (draft) async => updatedDraft = draft,
+      );
+      addTearDown(bloc.close);
+
+      expect(bloc.state.url, 'https://todoist.com/deep-work');
+      expect(bloc.state.title, 'Deep work guide');
+      expect(bloc.state.description, 'Useful context');
+      expect(bloc.state.collectionId, 7);
+      expect(bloc.state.isValid, isTrue);
+
+      bloc.add(const PocketLinkTitleChanged('Updated deep work guide'));
+      await expectLater(
+        bloc.stream,
+        emits(
+          isA<PocketLinkState>().having(
+            (state) => state.title,
+            'title',
+            'Updated deep work guide',
+          ),
+        ),
+      );
+
+      bloc.add(const PocketLinkSubmitted());
+      await expectLater(
+        bloc.stream,
+        emitsInOrder([
+          isA<PocketLinkState>().having(
+            (state) => state.status,
+            'status',
+            PocketLinkStatus.saving,
+          ),
+          isA<PocketLinkState>().having(
+            (state) => state.status,
+            'status',
+            PocketLinkStatus.success,
+          ),
+        ]),
+      );
+
+      expect(updatedDraft?.title, 'Updated deep work guide');
+      expect(updatedDraft?.collectionId, 7);
+    },
+  );
 }

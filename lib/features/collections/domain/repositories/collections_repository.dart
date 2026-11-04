@@ -1,8 +1,8 @@
-import '../entities/folio_collection.dart';
+import '../entities/collection_item.dart';
 import '../entities/new_collection.dart';
 
 abstract interface class CollectionsRepository {
-  Stream<List<FolioCollection>> watchCollections();
+  Stream<List<CollectionItem>> watchCollections();
 
   Future<int> createCollection(NewCollection collection);
 }

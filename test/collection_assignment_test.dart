@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:snap_note/core/theme/app_theme.dart';
-import 'package:snap_note/features/collections/domain/entities/folio_collection.dart';
+import 'package:snap_note/features/collections/domain/entities/collection_item.dart';
 import 'package:snap_note/features/collections/domain/entities/new_collection.dart';
 import 'package:snap_note/features/collections/domain/repositories/collections_repository.dart';
 import 'package:snap_note/features/collections/domain/usecases/create_collection.dart';
@@ -17,13 +17,13 @@ class _PickerCollectionsRepository implements CollectionsRepository {
   Future<int> createCollection(NewCollection collection) async => 3;
 
   @override
-  Stream<List<FolioCollection>> watchCollections() => const Stream.empty();
+  Stream<List<CollectionItem>> watchCollections() => const Stream.empty();
 }
 
 class _DelayedCollectionsRepository implements CollectionsRepository {
-  final _controller = StreamController<List<FolioCollection>>.broadcast();
+  final _controller = StreamController<List<CollectionItem>>.broadcast();
 
-  void emit(List<FolioCollection> collections) => _controller.add(collections);
+  void emit(List<CollectionItem> collections) => _controller.add(collections);
 
   Future<void> close() => _controller.close();
 
@@ -31,11 +31,11 @@ class _DelayedCollectionsRepository implements CollectionsRepository {
   Future<int> createCollection(NewCollection collection) async => 3;
 
   @override
-  Stream<List<FolioCollection>> watchCollections() => _controller.stream;
+  Stream<List<CollectionItem>> watchCollections() => _controller.stream;
 }
 
 const _collections = [
-  FolioCollection(
+  CollectionItem(
     id: 1,
     title: 'Deep work',
     description: 'Ideas for better focus',
@@ -45,7 +45,7 @@ const _collections = [
     updatedLabel: 'Updated today',
     isPinned: true,
   ),
-  FolioCollection(
+  CollectionItem(
     id: 2,
     title: 'Quiet inspiration',
     description: 'Ideas worth revisiting',
@@ -57,7 +57,7 @@ const _collections = [
   ),
 ];
 
-const _createdCollection = FolioCollection(
+const _createdCollection = CollectionItem(
   id: 3,
   title: 'Fresh collection',
   description: '',
@@ -83,7 +83,7 @@ class _CollectionAssignmentHarnessState
   @override
   Widget build(BuildContext context) {
     final collections = context.watch<CollectionsBloc>().state.collections;
-    FolioCollection? selectedCollection;
+    CollectionItem? selectedCollection;
     for (final collection in collections) {
       if (collection.id == _selectedCollectionId) {
         selectedCollection = collection;
@@ -105,7 +105,7 @@ class _CollectionAssignmentHarnessState
 
 Future<CollectionsBloc> _pumpPicker(
   WidgetTester tester, {
-  ValueChanged<FolioCollection>? onSelected,
+  ValueChanged<CollectionItem>? onSelected,
 }) async {
   final repository = _PickerCollectionsRepository();
   final bloc = CollectionsBloc(
@@ -135,7 +135,7 @@ void main() {
   testWidgets('shows collection cards and returns the selected collection', (
     tester,
   ) async {
-    FolioCollection? selected;
+    CollectionItem? selected;
     final bloc = await _pumpPicker(
       tester,
       onSelected: (collection) => selected = collection,

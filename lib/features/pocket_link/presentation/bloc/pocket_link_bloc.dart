@@ -84,6 +84,13 @@ class PocketLinkState extends Equatable {
 
   String get sourceHost => uri?.host.replaceFirst(RegExp(r'^www\.'), '') ?? '';
 
+  PocketLinkDraft get draft => PocketLinkDraft(
+    url: url,
+    title: title,
+    description: description,
+    collectionId: collectionId,
+  );
+
   PocketLinkState copyWith({
     String? url,
     String? title,
@@ -116,15 +123,38 @@ class PocketLinkState extends Equatable {
 }
 
 class PocketLinkBloc extends Bloc<PocketLinkEvent, PocketLinkState> {
-  PocketLinkBloc(this._savePocketLink) : super(const PocketLinkState()) {
+  PocketLinkBloc(SavePocketLink savePocketLink)
+    : _submit = ((PocketLinkDraft draft) async {
+        await savePocketLink(draft);
+      }),
+      super(const PocketLinkState()) {
+    _registerHandlers();
+  }
+
+  PocketLinkBloc.edit({
+    required PocketLinkDraft initialDraft,
+    required Future<void> Function(PocketLinkDraft draft) onSubmit,
+  }) : _submit = onSubmit,
+       super(
+         PocketLinkState(
+           url: initialDraft.url,
+           title: initialDraft.title,
+           description: initialDraft.description,
+           collectionId: initialDraft.collectionId,
+         ),
+       ) {
+    _registerHandlers();
+  }
+
+  final Future<void> Function(PocketLinkDraft draft) _submit;
+
+  void _registerHandlers() {
     on<PocketLinkUrlChanged>(_onUrlChanged);
     on<PocketLinkTitleChanged>(_onTitleChanged);
     on<PocketLinkDescriptionChanged>(_onDescriptionChanged);
     on<PocketLinkCollectionChanged>(_onCollectionChanged);
     on<PocketLinkSubmitted>(_onSubmitted);
   }
-
-  final SavePocketLink _savePocketLink;
 
   void _onUrlChanged(
     PocketLinkUrlChanged event,
@@ -171,14 +201,7 @@ class PocketLinkBloc extends Bloc<PocketLinkEvent, PocketLinkState> {
     if (!state.isValid || state.status == PocketLinkStatus.saving) return;
     emit(state.copyWith(status: PocketLinkStatus.saving));
     try {
-      await _savePocketLink(
-        PocketLinkDraft(
-          url: state.url,
-          title: state.title,
-          description: state.description,
-          collectionId: state.collectionId,
-        ),
-      );
+      await _submit(state.draft);
       emit(state.copyWith(status: PocketLinkStatus.success));
     } catch (error) {
       emit(

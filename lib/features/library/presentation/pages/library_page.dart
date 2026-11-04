@@ -7,6 +7,8 @@ import '../../../collections/presentation/bloc/collections_bloc.dart';
 import '../../../notes/domain/repositories/note_repository.dart';
 import '../../../notes/domain/usecases/update_note.dart';
 import '../../../notes/presentation/pages/note_detail_page.dart';
+import '../../../pocket_link/domain/repositories/pocket_link_repository.dart';
+import '../../../pocket_link/presentation/pages/pocket_link_detail_page.dart';
 import '../../domain/entities/library_item.dart';
 import '../bloc/library_bloc.dart';
 import '../components/link_card.dart';
@@ -346,7 +348,10 @@ class _LibraryCard extends StatelessWidget {
         item: item,
         onTap: () => _openNote(context),
       ),
-      LibraryItemType.link => LinkCard(item: item),
+      LibraryItemType.link => LinkCard(
+        item: item,
+        onTap: () => _openPocketLink(context),
+      ),
       LibraryItemType.video => VideoCard(item: item),
     };
   }
@@ -370,6 +375,27 @@ class _LibraryCard extends StatelessWidget {
     ScaffoldMessenger.of(context)
       ..clearSnackBars()
       ..showSnackBar(const SnackBar(content: Text('Note deleted.')));
+  }
+
+  Future<void> _openPocketLink(BuildContext context) async {
+    final repository = context.read<PocketLinkRepository>();
+    final collectionsBloc = context.read<CollectionsBloc>();
+    final deleted = await Navigator.of(context).push<bool>(
+      MaterialPageRoute<bool>(
+        builder: (_) => BlocProvider.value(
+          value: collectionsBloc,
+          child: PocketLinkDetailPage(
+            item: item,
+            onSubmit: (draft) => repository.update(item.id, draft),
+            onDelete: () => repository.delete(item.id),
+          ),
+        ),
+      ),
+    );
+    if (deleted != true || !context.mounted) return;
+    ScaffoldMessenger.of(context)
+      ..clearSnackBars()
+      ..showSnackBar(const SnackBar(content: Text('Pocket link deleted.')));
   }
 }
 

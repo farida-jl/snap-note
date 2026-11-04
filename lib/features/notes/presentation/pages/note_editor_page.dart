@@ -7,7 +7,7 @@ import 'package:flutter_quill/flutter_quill.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../shared/widgets/collection_assignment.dart';
 import '../../../../shared/widgets/navigation_bar/standart_nav_bar.dart';
-import '../../../collections/domain/entities/folio_collection.dart';
+import '../../../collections/domain/entities/collection_item.dart';
 import '../../../collections/presentation/bloc/collections_bloc.dart';
 import '../../domain/entities/note_draft.dart';
 import 'quill_editor_page.dart';
@@ -265,7 +265,7 @@ class _NoteEditorPageState extends State<NoteEditorPage> {
     final colors = context.appColors;
     final collectionsState = _tryCollectionsState(context);
     final collections =
-        collectionsState?.collections ?? const <FolioCollection>[];
+        collectionsState?.collections ?? const <CollectionItem>[];
     final selectedCollection = _selectedCollection(collections);
 
     return Scaffold(
@@ -374,7 +374,7 @@ class _NoteEditorPageState extends State<NoteEditorPage> {
     }
   }
 
-  FolioCollection? _selectedCollection(List<FolioCollection> collections) {
+  CollectionItem? _selectedCollection(List<CollectionItem> collections) {
     for (final collection in collections) {
       if (collection.id == _selectedCollectionId) return collection;
     }

@@ -1,4 +1,4 @@
-import '../entities/folio_collection.dart';
+import '../entities/collection_item.dart';
 import '../repositories/collections_repository.dart';
 
 class WatchCollections {
@@ -6,5 +6,5 @@ class WatchCollections {
 
   final CollectionsRepository _repository;
 
-  Stream<List<FolioCollection>> call() => _repository.watchCollections();
+  Stream<List<CollectionItem>> call() => _repository.watchCollections();
 }

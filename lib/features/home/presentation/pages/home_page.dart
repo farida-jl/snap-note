@@ -124,7 +124,7 @@ class _HomePageState extends State<HomePage> {
       case CaptureAction.pocketLink:
         final repository = context.read<PocketLinkRepository>();
         Navigator.of(context).push(
-          MaterialPageRoute<void>(
+          MaterialPageRoute<bool>(
             builder: (_) => BlocProvider.value(
               value: context.read<CollectionsBloc>(),
               child: BlocProvider(

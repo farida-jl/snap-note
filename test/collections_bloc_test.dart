@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:snap_note/features/collections/domain/entities/folio_collection.dart';
+import 'package:snap_note/features/collections/domain/entities/collection_item.dart';
 import 'package:snap_note/features/collections/domain/entities/new_collection.dart';
 import 'package:snap_note/features/collections/domain/repositories/collections_repository.dart';
 import 'package:snap_note/features/collections/domain/usecases/create_collection.dart';
@@ -16,8 +16,8 @@ class _FakeCollectionsRepository implements CollectionsRepository {
   }
 
   @override
-  Stream<List<FolioCollection>> watchCollections() => Stream.value(const [
-    FolioCollection(
+  Stream<List<CollectionItem>> watchCollections() => Stream.value(const [
+    CollectionItem(
       id: 1,
       title: 'Deep work',
       description: 'Ideas for better focus',

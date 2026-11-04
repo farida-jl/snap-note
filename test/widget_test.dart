@@ -6,7 +6,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:snap_note/core/theme/app_theme.dart';
-import 'package:snap_note/features/collections/domain/entities/folio_collection.dart';
+import 'package:snap_note/features/collections/domain/entities/collection_item.dart';
 import 'package:snap_note/features/collections/domain/entities/new_collection.dart';
 import 'package:snap_note/features/collections/domain/repositories/collections_repository.dart';
 import 'package:snap_note/features/collections/domain/usecases/create_collection.dart';
@@ -63,8 +63,8 @@ class _WidgetCollectionsRepository implements CollectionsRepository {
   Future<int> createCollection(NewCollection collection) async => 2;
 
   @override
-  Stream<List<FolioCollection>> watchCollections() => Stream.value(const [
-    FolioCollection(
+  Stream<List<CollectionItem>> watchCollections() => Stream.value(const [
+    CollectionItem(
       id: 1,
       title: 'Deep work',
       description: 'Ideas for better focus',
@@ -79,7 +79,13 @@ class _WidgetCollectionsRepository implements CollectionsRepository {
 
 class _WidgetPocketLinkRepository implements PocketLinkRepository {
   @override
+  Future<void> delete(int id) async {}
+
+  @override
   Future<int> save(PocketLinkDraft draft) async => 4;
+
+  @override
+  Future<void> update(int id, PocketLinkDraft draft) async {}
 }
 
 class _WidgetNoteRepository implements NoteRepository {

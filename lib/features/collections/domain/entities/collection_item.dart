@@ -1,7 +1,7 @@
 import 'package:equatable/equatable.dart';
 
-class FolioCollection extends Equatable {
-  const FolioCollection({
+class CollectionItem extends Equatable {
+  const CollectionItem({
     required this.id,
     required this.title,
     required this.description,

@@ -7,46 +7,55 @@ import '../../domain/entities/library_item.dart';
 import '../utils/relative_time.dart';
 
 class LinkCard extends StatelessWidget {
-  const LinkCard({required this.item, super.key});
+  const LinkCard({required this.item, this.onTap, super.key});
 
   final LibraryItem item;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
-    return CardSurface(
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return Semantics(
+      button: onTap != null,
+      label: 'Open pocket link ${item.title}',
+      child: InkWell(
+        borderRadius: BorderRadius.circular(20),
+        onTap: onTap,
+        child: CardSurface(
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    TypeBadge(type: item.type),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        TypeBadge(type: item.type),
+                        Text(
+                          formatRelativeTime(item.createdAt),
+                          style: TextStyle(
+                            fontSize: 9,
+                            color: context.appColors.primary,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    CardTitle(item.title),
+                    const SizedBox(height: 6),
                     Text(
-                      formatRelativeTime(item.createdAt),
+                      item.source ?? '',
                       style: TextStyle(
-                        fontSize: 9,
-                        color: context.appColors.primary,
+                        fontSize: 11,
+                        color: context.appColors.textSecondary,
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 8),
-                CardTitle(item.title),
-                const SizedBox(height: 6),
-                Text(
-                  item.source ?? '',
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: context.appColors.textSecondary,
-                  ),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }

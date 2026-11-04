@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../domain/entities/folio_collection.dart';
+import '../../domain/entities/collection_item.dart';
 import '../../domain/entities/new_collection.dart';
 import '../../domain/usecases/create_collection.dart';
 import '../../domain/usecases/watch_collections.dart';
@@ -31,7 +31,7 @@ final class CollectionCreationRequested extends CollectionsEvent {
 final class _CollectionsChanged extends CollectionsEvent {
   const _CollectionsChanged(this.collections);
 
-  final List<FolioCollection> collections;
+  final List<CollectionItem> collections;
 
   @override
   List<Object?> get props => [collections];
@@ -61,7 +61,7 @@ class CollectionsState extends Equatable {
   });
 
   final CollectionsStatus status;
-  final List<FolioCollection> collections;
+  final List<CollectionItem> collections;
   final String? message;
   final CollectionCreationStatus creationStatus;
   final String? creationMessage;
@@ -69,7 +69,7 @@ class CollectionsState extends Equatable {
 
   CollectionsState copyWith({
     CollectionsStatus? status,
-    List<FolioCollection>? collections,
+    List<CollectionItem>? collections,
     String? message,
     CollectionCreationStatus? creationStatus,
     String? creationMessage,
@@ -107,7 +107,7 @@ class CollectionsBloc extends Bloc<CollectionsEvent, CollectionsState> {
 
   final WatchCollections _watchCollections;
   final CreateCollection _createCollection;
-  StreamSubscription<List<FolioCollection>>? _subscription;
+  StreamSubscription<List<CollectionItem>>? _subscription;
 
   Future<void> _onStarted(
     CollectionsStarted event,

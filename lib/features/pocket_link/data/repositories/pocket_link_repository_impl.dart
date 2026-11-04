@@ -18,4 +18,20 @@ class PocketLinkRepositoryImpl implements PocketLinkRepository {
       collectionId: draft.collectionId,
     );
   }
+
+  @override
+  Future<void> delete(int id) => _localDataSource.delete(id);
+
+  @override
+  Future<void> update(int id, PocketLinkDraft draft) {
+    final uri = Uri.parse(draft.url.trim());
+    return _localDataSource.update(
+      id: id,
+      url: uri.toString(),
+      title: draft.title.trim(),
+      description: draft.description.trim(),
+      sourceHost: uri.host.replaceFirst(RegExp(r'^www\.'), ''),
+      collectionId: draft.collectionId,
+    );
+  }
 }

@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../core/theme/app_theme.dart';
-import '../../features/collections/domain/entities/folio_collection.dart';
+import '../../features/collections/domain/entities/collection_item.dart';
 import '../../features/collections/presentation/bloc/collections_bloc.dart';
 import '../../features/collections/presentation/pages/create_new_collection_page.dart';
 
@@ -17,9 +17,9 @@ class CollectionAssignment extends StatelessWidget {
     super.key,
   });
 
-  final FolioCollection? selectedCollection;
-  final List<FolioCollection> collections;
-  final ValueChanged<FolioCollection>? onSelected;
+  final CollectionItem? selectedCollection;
+  final List<CollectionItem> collections;
+  final ValueChanged<CollectionItem>? onSelected;
   final String fallbackTitle;
   final Key? assignmentKey;
 
@@ -108,7 +108,7 @@ class CollectionAssignment extends StatelessWidget {
 
     if (!context.mounted) return;
 
-    if (pickerResult case final FolioCollection selected) {
+    if (pickerResult case final CollectionItem selected) {
       onSelected!(selected);
       return;
     }
@@ -133,11 +133,11 @@ class CollectionAssignment extends StatelessWidget {
     }
   }
 
-  Future<FolioCollection?> _waitForCollection(
+  Future<CollectionItem?> _waitForCollection(
     CollectionsBloc bloc,
     int collectionId,
   ) async {
-    FolioCollection? findCollection(CollectionsState state) {
+    CollectionItem? findCollection(CollectionsState state) {
       for (final collection in state.collections) {
         if (collection.id == collectionId) return collection;
       }
@@ -181,15 +181,18 @@ class CollectionAssignment extends StatelessWidget {
             ),
             child: Row(
               children: [
-                SvgPicture.asset(
-                  'assets/icons/folders.svg',
-                  width: 23,
-                  height: 23,
-                  colorFilter: ColorFilter.mode(
-                    colors.primary,
-                    BlendMode.srcIn,
+                if (selectedCollection case final collection?)
+                  _CollectionOptionIcon(symbol: collection.symbol)
+                else
+                  SvgPicture.asset(
+                    'assets/icons/folders.svg',
+                    width: 23,
+                    height: 23,
+                    colorFilter: ColorFilter.mode(
+                      colors.primary,
+                      BlendMode.srcIn,
+                    ),
                   ),
-                ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
@@ -220,7 +223,7 @@ class _CollectionOptionCard extends StatelessWidget {
     required this.onTap,
   });
 
-  final FolioCollection collection;
+  final CollectionItem collection;
   final bool isSelected;
   final VoidCallback onTap;
 
