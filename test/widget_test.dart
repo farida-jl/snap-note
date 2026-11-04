@@ -308,6 +308,15 @@ void main() {
     expect(find.text('Note'), findsOneWidget);
     expect(find.byKey(const ValueKey('note-content-field')), findsOneWidget);
     expect(find.byKey(const ValueKey('note-content-toolbar')), findsNothing);
+    expect(
+      find.byKey(const ValueKey('note-collection-assignment')),
+      findsOneWidget,
+    );
+    await tester.tap(find.byKey(const ValueKey('note-collection-assignment')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('collection-option-1')));
+    await tester.pumpAndSettle();
+    expect(find.text('Deep work'), findsOneWidget);
 
     final noteContentField = find.byKey(const ValueKey('note-content-field'));
     await tester.ensureVisible(noteContentField);
@@ -350,7 +359,7 @@ void main() {
 
     expect(noteRepository.savedDrafts, hasLength(1));
     expect(noteRepository.savedDrafts.single.title, 'Make room for deep work');
-    expect(noteRepository.savedDrafts.single.collectionId, isNull);
+    expect(noteRepository.savedDrafts.single.collectionId, 1);
     final savedDocument = Document.fromJson(
       jsonDecode(noteRepository.savedDrafts.single.markdown) as List,
     );

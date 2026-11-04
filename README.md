@@ -81,3 +81,8 @@ flutter run
 flutter analyze
 flutter test
 ```
+
+## Format code
+dart fix --dry-run
+dart fix --apply
+dart format .

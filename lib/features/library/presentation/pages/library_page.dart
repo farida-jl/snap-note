@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../../../core/theme/app_theme.dart';
+import '../../../collections/presentation/bloc/collections_bloc.dart';
 import '../../../notes/domain/repositories/note_repository.dart';
 import '../../../notes/domain/usecases/update_note.dart';
 import '../../../notes/presentation/pages/note_detail_page.dart';
@@ -352,12 +353,16 @@ class _LibraryCard extends StatelessWidget {
 
   Future<void> _openNote(BuildContext context) async {
     final noteRepository = context.read<NoteRepository>();
+    final collectionsBloc = context.read<CollectionsBloc>();
     final deleted = await Navigator.of(context).push<bool>(
       MaterialPageRoute<bool>(
-        builder: (_) => NoteDetailPage(
-          item: item,
-          onSubmit: (draft) => UpdateNote(noteRepository)(item.id, draft),
-          onDelete: () => noteRepository.delete(item.id),
+        builder: (_) => BlocProvider.value(
+          value: collectionsBloc,
+          child: NoteDetailPage(
+            item: item,
+            onSubmit: (draft) => UpdateNote(noteRepository)(item.id, draft),
+            onDelete: () => noteRepository.delete(item.id),
+          ),
         ),
       ),
     );

@@ -1,10 +1,14 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 
 import '../../../../core/theme/app_theme.dart';
+import '../../../../shared/widgets/collection_assignment.dart';
 import '../../../../shared/widgets/navigation_bar/standart_nav_bar.dart';
+import '../../../collections/domain/entities/folio_collection.dart';
+import '../../../collections/presentation/bloc/collections_bloc.dart';
 import '../../domain/entities/note_draft.dart';
 import 'quill_editor_page.dart';
 
@@ -42,6 +46,8 @@ class _NoteEditorPageState extends State<NoteEditorPage> {
   late final DateTime _createdAt;
   late String _savedTitle;
   late String _savedBodyDelta;
+  int? _selectedCollectionId;
+  int? _savedCollectionId;
 
   bool _isEditing = false;
   bool _isDirty = false;
@@ -63,6 +69,8 @@ class _NoteEditorPageState extends State<NoteEditorPage> {
     _createdAt = widget.createdAt ?? DateTime.now();
     _savedTitle = widget.initialTitle;
     _savedBodyDelta = _encodeDocument(_bodyController.document);
+    _selectedCollectionId = widget.initialCollectionId;
+    _savedCollectionId = widget.initialCollectionId;
     _isEditing = _isNewNote;
     _titleController.addListener(_refreshDirtyState);
     _bodyController.addListener(_refreshDirtyState);
@@ -103,7 +111,8 @@ class _NoteEditorPageState extends State<NoteEditorPage> {
   void _refreshDirtyState() {
     final changed =
         _titleController.text != _savedTitle ||
-        _encodeDocument(_bodyController.document) != _savedBodyDelta;
+        _encodeDocument(_bodyController.document) != _savedBodyDelta ||
+        _selectedCollectionId != _savedCollectionId;
     if (changed != _isDirty && mounted) setState(() => _isDirty = changed);
   }
 
@@ -146,7 +155,7 @@ class _NoteEditorPageState extends State<NoteEditorPage> {
         NoteDraft(
           title: title,
           markdown: bodyDelta,
-          collectionId: widget.initialCollectionId,
+          collectionId: _selectedCollectionId,
         ),
       );
       if (!mounted) return;
@@ -158,6 +167,7 @@ class _NoteEditorPageState extends State<NoteEditorPage> {
 
       _savedTitle = title;
       _savedBodyDelta = bodyDelta;
+      _savedCollectionId = _selectedCollectionId;
       _titleController.value = _titleController.value.copyWith(text: title);
       setState(() {
         _isDirty = false;
@@ -253,6 +263,10 @@ class _NoteEditorPageState extends State<NoteEditorPage> {
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
+    final collectionsState = _tryCollectionsState(context);
+    final collections =
+        collectionsState?.collections ?? const <FolioCollection>[];
+    final selectedCollection = _selectedCollection(collections);
 
     return Scaffold(
       resizeToAvoidBottomInset: true,
@@ -305,7 +319,23 @@ class _NoteEditorPageState extends State<NoteEditorPage> {
                             color: colors.textSecondary,
                           ),
                         ),
-                        if (!_bodyHasFocus) ... [
+                        const SizedBox(height: 14),
+                        CollectionAssignment(
+                          selectedCollection: selectedCollection,
+                          collections: collections,
+                          assignmentKey: const ValueKey(
+                            'note-collection-assignment',
+                          ),
+                          onSelected: collectionsState == null
+                              ? null
+                              : (collection) {
+                                  setState(() {
+                                    _selectedCollectionId = collection.id;
+                                  });
+                                  _refreshDirtyState();
+                                },
+                        ),
+                        if (!_bodyHasFocus) ...[
                           const SizedBox(height: 2),
                           const Divider(),
                         ],
@@ -334,6 +364,24 @@ class _NoteEditorPageState extends State<NoteEditorPage> {
         ),
       ),
     );
+  }
+
+  CollectionsState? _tryCollectionsState(BuildContext context) {
+    try {
+      return context.watch<CollectionsBloc>().state;
+    } on ProviderNotFoundException {
+      return null;
+    }
+  }
+
+  FolioCollection? _selectedCollection(List<FolioCollection> collections) {
+    for (final collection in collections) {
+      if (collection.id == _selectedCollectionId) return collection;
+    }
+    for (final collection in collections) {
+      if (collection.title == 'Read Later') return collection;
+    }
+    return null;
   }
 
   Widget _buildTrailing() {
