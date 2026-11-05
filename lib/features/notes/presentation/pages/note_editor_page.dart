@@ -274,7 +274,7 @@ class _NoteEditorPageState extends State<NoteEditorPage> {
                         SliverAppBar(
                           surfaceTintColor: context.appColors.background,
                           automaticallyImplyLeading: false,
-                          expandedHeight: 250.0,
+                          expandedHeight: _bodyHasFocus ? 250 : 210,
                           floating: false,
                           toolbarHeight: 0,
                           pinned: true,

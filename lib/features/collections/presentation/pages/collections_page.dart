@@ -11,61 +11,86 @@ import '../bloc/collections_bloc.dart';
 class CollectionsPage extends StatelessWidget {
   const CollectionsPage({super.key});
 
+  static const _maxContentWidth = 1120.0;
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
       bottom: false,
-      child: BlocBuilder<CollectionsBloc, CollectionsState>(
-        builder: (context, state) {
-          return CustomScrollView(
-            physics: const BouncingScrollPhysics(),
-            slivers: [
-              SliverPadding(
-                padding: const EdgeInsets.fromLTRB(24, 8, 24, 0),
-                sliver: SliverList.list(
-                  children: [
-                    const SizedBox(height: 20),
-                    _Introduction(collections: state.collections),
-                    const SizedBox(height: 18),
-                    const _CollectionSearch(),
-                    const SizedBox(height: 20),
-                    const _SectionHeader(),
-                    const SizedBox(height: 12),
-                  ],
-                ),
-              ),
-              if (state.status == CollectionsStatus.failure)
-                SliverFillRemaining(
-                  hasScrollBody: false,
-                  child: Center(
-                    child: Text(
-                      state.message ?? 'Could not load collections.',
-                      style: TextStyle(color: context.appColors.textSecondary),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final wideScreenPadding =
+              (constraints.maxWidth - _maxContentWidth) / 2;
+          final horizontalPadding = wideScreenPadding > 24
+              ? wideScreenPadding
+              : 24.0;
+
+          return BlocBuilder<CollectionsBloc, CollectionsState>(
+            builder: (context, state) {
+              return CustomScrollView(
+                physics: const BouncingScrollPhysics(),
+                slivers: [
+                  SliverPadding(
+                    padding: EdgeInsets.fromLTRB(
+                      horizontalPadding,
+                      8,
+                      horizontalPadding,
+                      0,
+                    ),
+                    sliver: SliverList.list(
+                      children: [
+                        const SizedBox(height: 20),
+                        _Introduction(collections: state.collections),
+                        const SizedBox(height: 18),
+                        const _CollectionSearch(),
+                        const SizedBox(height: 20),
+                        const _SectionHeader(),
+                        const SizedBox(height: 12),
+                      ],
                     ),
                   ),
-                )
-              else if (state.status != CollectionsStatus.success)
-                const SliverFillRemaining(
-                  hasScrollBody: false,
-                  child: Center(child: CircularProgressIndicator()),
-                )
-              else
-                SliverPadding(
-                  padding: const EdgeInsets.fromLTRB(24, 0, 24, 32),
-                  sliver: SliverGrid.builder(
-                    itemCount: state.collections.length,
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          crossAxisSpacing: 12,
-                          mainAxisSpacing: 12,
-                          childAspectRatio: .93,
+                  if (state.status == CollectionsStatus.failure)
+                    SliverFillRemaining(
+                      hasScrollBody: false,
+                      child: Center(
+                        child: Text(
+                          state.message ?? 'Could not load collections.',
+                          style: TextStyle(
+                            color: context.appColors.textSecondary,
+                          ),
                         ),
-                    itemBuilder: (context, index) =>
-                        _CollectionCard(collection: state.collections[index]),
-                  ),
-                ),
-            ],
+                      ),
+                    )
+                  else if (state.status != CollectionsStatus.success)
+                    const SliverFillRemaining(
+                      hasScrollBody: false,
+                      child: Center(child: CircularProgressIndicator()),
+                    )
+                  else
+                    SliverPadding(
+                      padding: EdgeInsets.fromLTRB(
+                        horizontalPadding,
+                        0,
+                        horizontalPadding,
+                        32,
+                      ),
+                      sliver: SliverGrid.builder(
+                        itemCount: state.collections.length,
+                        gridDelegate:
+                            const SliverGridDelegateWithMaxCrossAxisExtent(
+                              maxCrossAxisExtent: 280,
+                              crossAxisSpacing: 16,
+                              mainAxisSpacing: 16,
+                              childAspectRatio: 0.93,
+                            ),
+                        itemBuilder: (context, index) => _CollectionCard(
+                          collection: state.collections[index],
+                        ),
+                      ),
+                    ),
+                ],
+              );
+            },
           );
         },
       ),

@@ -20,8 +20,13 @@ class CollectionDetailPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: context.appColors.background,
       body: SafeArea(
+        top: false,
         child: Column(
           children: [
+            SizedBox(
+              height: MediaQuery.paddingOf(context).top, 
+              child: Container(color: context.appColors.canvas)
+            ),
             StandartNavigationBar(
               title: '',
               backgroundColor: context.appColors.canvas,

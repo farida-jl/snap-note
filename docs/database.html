@@ -299,6 +299,25 @@
         font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
       }
 
+      .route-table td {
+        line-height: 1.6;
+        overflow-wrap: anywhere;
+      }
+
+      .route-table td:first-child {
+        width: 45%;
+      }
+
+      a {
+        color: var(--primary);
+        text-underline-offset: 3px;
+      }
+
+      a:focus-visible {
+        outline: 2px solid var(--primary);
+        outline-offset: 3px;
+      }
+
       @media (max-width: 820px) {
         main {
           padding: 40px 0;
@@ -351,12 +370,12 @@
   <body>
     <main>
       <header>
-        <p class="eyebrow">Snap Note · Schema version 5</p>
+        <p class="eyebrow">Snap Note · Schema version 1</p>
         <h1>AppDatabase diagram</h1>
         <p class="summary">
-          A simple view of the Drift-backed SQLite schema. Primary keys are
-          auto-incremented, and fields marked nullable can be stored without a
-          value.
+          The current Drift-backed SQLite schema and the database identities
+          used by app routes. Both tables are created on a fresh install;
+          primary keys are auto-incremented.
         </p>
       </header>
 
@@ -369,24 +388,22 @@
           <table>
             <thead>
               <tr>
-                <th>Field</th>
-                <th>Type</th>
-                <th>Rule</th>
+                <th scope="col">Field</th>
+                <th scope="col">Type</th>
+                <th scope="col">Rule</th>
               </tr>
             </thead>
             <tbody>
               <tr><td>id</td><td class="type">INTEGER</td><td><span class="badge">PK</span></td></tr>
               <tr><td>collection_id</td><td class="type">INTEGER</td><td><span class="badge">FK</span></td></tr>
-              <tr><td>type</td><td class="type">TEXT</td><td>Required</td></tr>
+              <tr><td>type</td><td class="type">TEXT</td><td>Required; see constraints below</td></tr>
               <tr><td>title</td><td class="type">TEXT</td><td>Required</td></tr>
               <tr><td>description</td><td class="type">TEXT</td><td><span class="badge optional">Nullable</span></td></tr>
-              <tr><td>markdown</td><td class="type">TEXT</td><td>Note</td></tr>
+              <tr><td>markdown</td><td class="type">TEXT</td><td>Required for notes; otherwise nullable</td></tr>
               <tr><td>source</td><td class="type">TEXT</td><td><span class="badge optional">Nullable</span></td></tr>
-              <tr><td>url</td><td class="type">TEXT</td><td>Link / video</td></tr>
-              <tr><td>display_time</td><td class="type">TEXT</td><td>Required</td></tr>
-              <tr><td>duration</td><td class="type">TEXT</td><td><span class="badge optional">Nullable</span></td></tr>
+              <tr><td>url</td><td class="type">TEXT</td><td>Required for non-notes; nullable for notes</td></tr>
               <tr><td>image_asset</td><td class="type">TEXT</td><td><span class="badge optional">Nullable</span></td></tr>
-              <tr><td>created_at</td><td class="type">DATETIME</td><td>Required</td></tr>
+              <tr><td>created_at</td><td class="type">INTEGER</td><td>Required</td></tr>
             </tbody>
           </table>
         </article>
@@ -405,9 +422,9 @@
           <table>
             <thead>
               <tr>
-                <th>Field</th>
-                <th>Type</th>
-                <th>Rule</th>
+                <th scope="col">Field</th>
+                <th scope="col">Type</th>
+                <th scope="col">Rule</th>
               </tr>
             </thead>
             <tbody>
@@ -418,8 +435,8 @@
               <tr><td>color_value</td><td class="type">INTEGER</td><td>ARGB</td></tr>
               <tr><td>symbol</td><td class="type">TEXT</td><td>Required</td></tr>
               <tr><td>updated_label</td><td class="type">TEXT</td><td>Required</td></tr>
-              <tr><td>is_pinned</td><td class="type">BOOLEAN</td><td>Default false</td></tr>
-              <tr><td>updated_at</td><td class="type">DATETIME</td><td>Required</td></tr>
+              <tr><td>is_pinned</td><td class="type">INTEGER</td><td>Boolean 0 / 1; default 0</td></tr>
+              <tr><td>updated_at</td><td class="type">INTEGER</td><td>Required</td></tr>
             </tbody>
           </table>
         </article>
@@ -440,17 +457,52 @@
         <article class="note">
           <h3>URL requirement</h3>
           <p>
-            <code>link</code> and <code>video</code> rows require
-            <code>url</code>; <code>note</code> rows may store it as
-            <code>NULL</code>.
+            The SQL constraint <code>type = 'note' OR url IS NOT NULL</code>
+            requires a URL for every non-note row, including links and videos.
+            Notes may store <code>url</code> as <code>NULL</code>.
           </p>
         </article>
         <article class="note">
-          <h3>Markdown requirement</h3>
+          <h3>Note content</h3>
           <p>
-            <code>note</code> rows require <code>markdown</code>;
-            <code>link</code> and <code>video</code> rows may store it as
-            <code>NULL</code>.
+            Notes require a non-null <code>markdown</code> value. Despite the
+            column name, the editor writes Quill Delta as a JSON string and
+            can also read legacy Markdown. Other item types may leave it null.
+          </p>
+        </article>
+        <article class="note">
+          <h3>Stored values and presentation</h3>
+          <p>
+            Drift stores <code>DateTime</code> values as integer Unix timestamps
+            in seconds. Relative time labels are calculated from
+            <code>created_at</code> in the UI; <code>display_time</code> and
+            <code>duration</code> are not columns in the current schema.
+          </p>
+        </article>
+        <article class="note">
+          <h3>Supported item types</h3>
+          <p>
+            The app recognizes <code>note</code>, <code>link</code>, and
+            <code>video</code>. The database stores <code>type</code> as plain
+            text without an enum constraint, so callers must supply a supported
+            value.
+          </p>
+        </article>
+        <article class="note">
+          <h3>Collection counts</h3>
+          <p>
+            <code>item_count</code> is stored summary data. Note and pocket-link
+            queries update counts transactionally when items are created,
+            deleted, or moved between collections.
+          </p>
+        </article>
+        <article class="note">
+          <h3>Default collection</h3>
+          <p>
+            When a new note or pocket link has no selected collection, the save
+            query finds or creates <strong>Read Later</strong>. A fresh database
+            starts empty; the current database class defines no custom migration
+            or demo-data seeding strategy.
           </p>
         </article>
       </section>
@@ -459,8 +511,9 @@
         <div class="examples-heading">
           <h2 id="examples-title">Saved item examples</h2>
           <p>
-            Example values passed to Drift when saving each supported item
-            type. Every row includes a required <code>collection_id</code>.
+            Illustrative saved rows using the current columns. IDs are generated
+            by SQLite, and each <code>collection_id</code> refers to an existing
+            collection. Timestamps below are integer Unix seconds.
           </p>
         </div>
 
@@ -471,17 +524,16 @@
               <span class="example-type">note</span>
             </header>
             <pre><code>{
+  "id": 1,
   "collection_id": 1,
   "type": "note",
   "title": "Make room for deep work",
-  "description": "Protect the first hour.",
-  "markdown": "# Make room for deep work\n\nProtect the first hour. **Make space to think.**",
+  "description": null,
+  "markdown": "[{\"insert\":\"Protect the first hour. Make space to think.\\n\"}]",
   "source": null,
   "url": null,
-  "display_time": "Today, 9:12",
-  "duration": null,
   "image_asset": null,
-  "created_at": "2026-11-01T09:12:00"
+  "created_at": 1793524320
 }</code></pre>
             <p class="example-note">
               Saved in the <strong>Deep work</strong> collection.
@@ -494,20 +546,19 @@
               <span class="example-type">link</span>
             </header>
             <pre><code>{
+  "id": 2,
   "collection_id": 3,
   "type": "link",
   "title": "A practical guide to deep work",
-  "description": null,
+  "description": "A useful guide to revisit.",
   "markdown": null,
-  "source": "todoist.com · Yesterday",
+  "source": "example.com",
   "url": "https://example.com/articles/deep-work",
-  "display_time": "Yesterday",
-  "duration": "8 MIN",
   "image_asset": null,
-  "created_at": "2026-10-31T16:30:00"
+  "created_at": 1793464200
 }</code></pre>
             <p class="example-note">
-              Saved in the <strong>Read later</strong> collection.
+              Saved in the <strong>Read Later</strong> collection.
             </p>
           </article>
 
@@ -517,6 +568,7 @@
               <span class="example-type">video</span>
             </header>
             <pre><code>{
+  "id": 3,
   "collection_id": 1,
   "type": "video",
   "title": "Build a ritual for focus",
@@ -524,20 +576,71 @@
   "markdown": null,
   "source": "Cal Newport",
   "url": "https://example.com/videos/focus-ritual",
-  "display_time": "Yesterday",
-  "duration": "12:34",
   "image_asset": "assets/images/video_still.png",
-  "created_at": "2026-10-31T11:00:00"
+  "created_at": 1793444400
 }</code></pre>
             <p class="example-note">
-              Saved in the <strong>Deep work</strong> collection.
+              Example storage shape for a video row. Video capture remains an
+              unimplemented action in the current app.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section class="examples" aria-labelledby="routing-title">
+        <div class="examples-heading">
+          <h2 id="routing-title">Database IDs in navigation</h2>
+          <p>
+            <code>go_router</code> routes carry a positive integer ID. The
+            destination resolves that ID from the existing Library or
+            Collections BLoC stream, so opening a detail URL does not depend on
+            a card passing an object through <code>extra</code>.
+          </p>
+        </div>
+        <div class="entity route-table">
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">Route</th>
+                <th scope="col">Record lookup</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td><code>/library/notes/:id</code></td><td><code>saved_items.id</code> with <code>type = 'note'</code></td></tr>
+              <tr><td><code>/library/links/:id</code></td><td><code>saved_items.id</code> with <code>type = 'link'</code></td></tr>
+              <tr><td><code>/library/links/:id/edit</code></td><td>The same pocket-link record, opened for editing</td></tr>
+              <tr><td><code>/collections/:id</code></td><td><code>collections.id</code>; its items match <code>saved_items.collection_id</code></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="notes">
+          <article class="note">
+            <h3>Loading and recovery</h3>
+            <p>
+              Destinations wait for their data stream, offer retry on a load
+              failure, and show a recovery page for invalid IDs or missing
+              records. A note URL cannot resolve a pocket-link record.
+            </p>
+          </article>
+          <article class="note">
+            <h3>Stable editor state</h3>
+            <p>
+              Once an item opens, its initial snapshot stays with that screen.
+              Database emissions preserve editor input and allow a delete flow
+              to return its navigation result before the screen unmounts.
             </p>
           </article>
         </div>
       </section>
 
       <footer>
-        Source: <code>lib/core/database/app_database.dart</code>
+        Sources:
+        <a href="../lib/core/database/app_database.dart">database version</a>,
+        <a href="../lib/core/database/tables/saved_items_table.dart">saved items</a>,
+        <a href="../lib/core/database/tables/collections_table.dart">collections</a>,
+        <a href="../lib/core/database/queries/app_database_queries.dart">queries</a>,
+        <a href="../lib/core/router/app_router.dart">routes</a>, and
+        <a href="../lib/core/router/route_destinations.dart">destination loading</a>.
       </footer>
     </main>
   </body>

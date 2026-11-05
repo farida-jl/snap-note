@@ -405,7 +405,6 @@ class _PinCollectionTile extends StatelessWidget {
       color: context.appColors.card,
       shape: RoundedRectangleBorder(
         side: BorderSide(color: context.appColors.border),
-        borderRadius: BorderRadius.circular(12),
       ),
       child: SwitchListTile.adaptive(
         key: const ValueKey('pin-collection-toggle'),

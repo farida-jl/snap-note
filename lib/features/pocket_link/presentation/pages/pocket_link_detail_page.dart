@@ -4,7 +4,9 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/router/app_routes.dart';
+
 import '../../../../core/theme/app_theme.dart';
+import '../../../../shared/widgets/navigation_bar/standart_nav_bar.dart';
 import '../../../collections/domain/entities/collection_item.dart';
 import '../../../collections/presentation/bloc/collections_bloc.dart';
 import '../../../library/domain/entities/library_item.dart';
@@ -133,10 +135,14 @@ class _PocketLinkDetailPageState extends State<PocketLinkDetailPage> {
       body: SafeArea(
         child: Column(
           children: [
-            _DetailNavigation(
-              isBusy: _isDeleting,
-              onMore: _openOptions,
-              color: ink,
+            StandartNavigationBar(
+              key: const ValueKey('pocket-link-detail-edit-option'),
+              title: 'Edit',
+              trailing: _TrailingNavigation(
+                isBusy: _isDeleting,
+                onMore: _openOptions,
+                color: ink,
+              ),
             ),
             Expanded(
               child: SingleChildScrollView(
@@ -219,8 +225,8 @@ class _PocketLinkDetailPageState extends State<PocketLinkDetailPage> {
   }
 }
 
-class _DetailNavigation extends StatelessWidget {
-  const _DetailNavigation({
+class _TrailingNavigation extends StatelessWidget {
+  const _TrailingNavigation({
     required this.isBusy,
     required this.onMore,
     required this.color,
@@ -237,13 +243,6 @@ class _DetailNavigation extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          IconButton(
-            key: const ValueKey('pocket-link-detail-back-button'),
-            tooltip: 'Back',
-            padding: const EdgeInsets.symmetric(horizontal: 24),
-            onPressed: () => Navigator.of(context).maybePop(),
-            icon: Icon(Icons.arrow_back_rounded, size: 22, color: color),
-          ),
           if (isBusy)
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: 26),
