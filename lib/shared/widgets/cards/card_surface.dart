@@ -14,7 +14,6 @@ class CardSurface extends StatelessWidget {
       decoration: BoxDecoration(
         color: context.appColors.card,
         border: Border.all(color: context.appColors.border),
-        borderRadius: BorderRadius.circular(20),
         boxShadow: const [
           BoxShadow(
             color: Color(0x0D173042),

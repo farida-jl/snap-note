@@ -3,8 +3,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../../../core/theme/app_theme.dart';
+import '../../../library/presentation/bloc/library_bloc.dart';
 import '../../domain/entities/collection_item.dart';
 import '../bloc/collections_bloc.dart';
+import 'collection_detail_page.dart';
 import 'create_new_collection_page.dart';
 
 class CollectionsPage extends StatelessWidget {
@@ -201,15 +203,22 @@ class _CollectionCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Material(
       color: Color(collection.colorValue),
-      borderRadius: BorderRadius.circular(18),
       child: InkWell(
-        onTap: () {},
-        borderRadius: BorderRadius.circular(18),
+        onTap: () {
+          final libraryBloc = context.read<LibraryBloc>();
+          Navigator.of(context).push(
+            MaterialPageRoute<void>(
+              builder: (_) => BlocProvider.value(
+                value: libraryBloc,
+                child: CollectionDetailPage(collection: collection),
+              ),
+            ),
+          );
+        },
         child: Container(
           padding: const EdgeInsets.all(15),
           decoration: BoxDecoration(
             border: Border.all(color: context.appColors.border),
-            borderRadius: BorderRadius.circular(18),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,

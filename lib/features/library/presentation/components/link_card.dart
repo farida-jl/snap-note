@@ -18,7 +18,6 @@ class LinkCard extends StatelessWidget {
       button: onTap != null,
       label: 'Open pocket link ${item.title}',
       child: InkWell(
-        borderRadius: BorderRadius.circular(20),
         onTap: onTap,
         child: CardSurface(
           child: Row(
