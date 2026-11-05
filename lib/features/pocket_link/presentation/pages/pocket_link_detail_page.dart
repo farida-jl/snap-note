@@ -287,7 +287,7 @@ class _MetadataPills extends StatelessWidget {
         const SizedBox(width: 6),
         Flexible(
           child: _Pill(
-            label: collection?.title ?? 'Read Later',
+            label: collection?.title ?? 'Read later',
             color: color,
             leading: _CollectionSymbol(
               symbol: collection?.symbol,

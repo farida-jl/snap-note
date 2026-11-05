@@ -55,7 +55,7 @@ class PocketLinkState extends Equatable {
     this.url = '',
     this.title = '',
     this.description = '',
-    this.topic = 'Read Later',
+    this.topic = 'Read later',
     this.collectionId,
     this.status = PocketLinkStatus.editing,
     this.errorMessage,

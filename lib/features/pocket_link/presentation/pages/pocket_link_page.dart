@@ -172,7 +172,7 @@ class _PocketLinkPageState extends State<PocketLinkPage> {
       if (collection.id == selectedCollectionId) return collection;
     }
     for (final collection in collections) {
-      if (collection.title == 'Read Later') return collection;
+      if (collection.title == 'Read later') return collection;
     }
     return null;
   }

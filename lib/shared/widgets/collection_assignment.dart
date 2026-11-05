@@ -14,7 +14,7 @@ class CollectionAssignment extends StatelessWidget {
     this.selectedCollection,
     this.collections = const [],
     this.onSelected,
-    this.fallbackTitle = 'Read Later',
+    this.fallbackTitle = 'Read later',
     this.assignmentKey,
     super.key,
   });

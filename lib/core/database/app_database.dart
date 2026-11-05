@@ -14,4 +14,23 @@ class AppDatabase extends _$AppDatabase {
 
   @override
   int get schemaVersion => 1;
+
+  @override
+  MigrationStrategy get migration => MigrationStrategy(
+    onCreate: (migrator) async {
+      await migrator.createAll();
+      await into(collections).insert(
+        CollectionsCompanion.insert(
+          title: 'Read later',
+          description: 'Links saved for later',
+          itemCount: 0,
+          colorValue: 0xFFE8EEF4,
+          symbol: 'bookmark',
+          updatedLabel: 'No links yet',
+          isPinned: const Value(true),
+          updatedAt: DateTime.now(),
+        ),
+      );
+    },
+  );
 }

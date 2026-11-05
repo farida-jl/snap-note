@@ -432,7 +432,7 @@ class _NoteEditorPageState extends State<NoteEditorPage> {
       if (collection.id == _selectedCollectionId) return collection;
     }
     for (final collection in collections) {
-      if (collection.title == 'Read Later') return collection;
+      if (collection.title == 'Read later') return collection;
     }
     return null;
   }

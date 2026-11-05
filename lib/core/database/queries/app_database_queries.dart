@@ -280,7 +280,7 @@ extension AppDatabaseQueries on AppDatabase {
   Future<int> _ensureReadLaterCollection() async {
     final existing =
         await (select(collections)
-              ..where((row) => row.title.equals('Read Later'))
+              ..where((row) => row.title.equals('Read later'))
               ..orderBy([(row) => OrderingTerm.asc(row.id)])
               ..limit(1))
             .getSingleOrNull();
@@ -289,7 +289,7 @@ extension AppDatabaseQueries on AppDatabase {
 
     return into(collections).insert(
       CollectionsCompanion.insert(
-        title: 'Read Later',
+        title: 'Read later',
         description: 'Links saved for later',
         itemCount: 0,
         colorValue: 0xFFE8EEF4,

@@ -4,6 +4,19 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:snap_note/core/database/app_database.dart';
 
 void main() {
+  test('seeds Read later on first database open', () async {
+    final database = AppDatabase(NativeDatabase.memory());
+    addTearDown(database.close);
+
+    final collections = await database.select(database.collections).get();
+
+    expect(collections, hasLength(1));
+    expect(collections.single.title, 'Read later');
+    expect(collections.single.description, 'Links saved for later');
+    expect(collections.single.isPinned, isTrue);
+    expect(collections.single.itemCount, 0);
+  });
+
   test('creates a pinned emoji collection', () async {
     final database = AppDatabase(NativeDatabase.memory());
     addTearDown(database.close);
@@ -39,7 +52,7 @@ void main() {
     )..where((row) => row.id.equals(id))).getSingle();
     final readLater = await (database.select(
       database.collections,
-    )..where((row) => row.title.equals('Read Later'))).getSingle();
+    )..where((row) => row.title.equals('Read later'))).getSingle();
 
     expect(saved.type, 'note');
     expect(saved.markdown, contains('- [x]'));
@@ -135,7 +148,7 @@ void main() {
     )..where((row) => row.id.equals(id))).getSingle();
     final readLater = await (database.select(
       database.collections,
-    )..where((row) => row.title.equals('Read Later'))).getSingle();
+    )..where((row) => row.title.equals('Read later'))).getSingle();
 
     expect(saved.type, 'link');
     expect(saved.url, contains('todoist.com'));
@@ -278,7 +291,7 @@ void main() {
 
     final readLater = await (database.select(
       database.collections,
-    )..where((row) => row.title.equals('Read Later'))).getSingle();
+    )..where((row) => row.title.equals('Read later'))).getSingle();
     final item = await (database.select(
       database.savedItems,
     )..where((row) => row.id.equals(itemId))).getSingle();
@@ -287,53 +300,56 @@ void main() {
     expect(readLater.itemCount, 1);
   });
 
-  test('fresh database is empty and enforces saved item constraints', () async {
-    final database = AppDatabase(NativeDatabase.memory());
-    addTearDown(database.close);
+  test(
+    'fresh database seeds Read later and enforces saved item constraints',
+    () async {
+      final database = AppDatabase(NativeDatabase.memory());
+      addTearDown(database.close);
 
-    expect(await database.savedItems.count().getSingle(), 0);
-    expect(await database.collections.count().getSingle(), 0);
+      expect(await database.savedItems.count().getSingle(), 0);
+      expect(await database.collections.count().getSingle(), 1);
 
-    final collectionId = await database
-        .into(database.collections)
-        .insert(
-          CollectionsCompanion.insert(
-            title: 'Personal',
-            description: 'User collection',
-            itemCount: 0,
-            colorValue: 0xFFFFFFFF,
-            symbol: 'folder',
-            updatedLabel: 'New',
-            updatedAt: DateTime(2026, 11, 2),
-          ),
-        );
-
-    await expectLater(
-      database
-          .into(database.savedItems)
+      final collectionId = await database
+          .into(database.collections)
           .insert(
-            SavedItemsCompanion.insert(
-              collectionId: collectionId,
-              type: 'link',
-              title: 'Link without URL',
-              createdAt: DateTime(2026, 11, 1),
+            CollectionsCompanion.insert(
+              title: 'Personal',
+              description: 'User collection',
+              itemCount: 0,
+              colorValue: 0xFFFFFFFF,
+              symbol: 'folder',
+              updatedLabel: 'New',
+              updatedAt: DateTime(2026, 11, 2),
             ),
-          ),
-      throwsA(anything),
-    );
+          );
 
-    await expectLater(
-      database
-          .into(database.savedItems)
-          .insert(
-            SavedItemsCompanion.insert(
-              collectionId: collectionId,
-              type: 'note',
-              title: 'Note without Markdown',
-              createdAt: DateTime(2026, 11, 1),
+      await expectLater(
+        database
+            .into(database.savedItems)
+            .insert(
+              SavedItemsCompanion.insert(
+                collectionId: collectionId,
+                type: 'link',
+                title: 'Link without URL',
+                createdAt: DateTime(2026, 11, 1),
+              ),
             ),
-          ),
-      throwsA(anything),
-    );
-  });
+        throwsA(anything),
+      );
+
+      await expectLater(
+        database
+            .into(database.savedItems)
+            .insert(
+              SavedItemsCompanion.insert(
+                collectionId: collectionId,
+                type: 'note',
+                title: 'Note without Markdown',
+                createdAt: DateTime(2026, 11, 1),
+              ),
+            ),
+        throwsA(anything),
+      );
+    },
+  );
 }

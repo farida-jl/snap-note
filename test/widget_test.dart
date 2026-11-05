@@ -510,7 +510,7 @@ void main() {
       find.byKey(const ValueKey('pocket-link-collection-assignment')),
       findsOneWidget,
     );
-    expect(find.text('Read Later'), findsOneWidget);
+    expect(find.text('Read later'), findsOneWidget);
     expect(find.text('Change'), findsNothing);
 
     final pocketCollectionAssignment = find.byKey(
