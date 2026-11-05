@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
+import 'package:snap_note/core/router/app_routes.dart';
+import 'package:snap_note/features/pocket_link/presentation/bloc/pocket_link_bloc.dart';
+import 'package:snap_note/features/pocket_link/presentation/pages/pocket_link_page.dart';
 import 'package:snap_note/core/theme/app_theme.dart';
 import 'package:snap_note/features/collections/domain/entities/collection_item.dart';
 import 'package:snap_note/features/collections/domain/entities/new_collection.dart';
@@ -49,19 +53,47 @@ void main() {
     Future<void> Function()? onDelete,
   }) {
     final collectionsRepository = _CollectionsRepository();
+    final router = GoRouter(
+      initialLocation: '/detail',
+      routes: [
+        GoRoute(
+          path: '/',
+          builder: (_, _) => const Scaffold(),
+          routes: [
+            GoRoute(
+              path: 'detail',
+              builder: (_, _) =>
+                  PocketLinkDetailPage(item: item, onDelete: onDelete),
+              routes: [
+                GoRoute(
+                  path: 'links/:id/edit',
+                  name: AppRoutes.editPocketLink,
+                  builder: (_, _) => BlocProvider(
+                    create: (_) => PocketLinkBloc.edit(
+                      initialDraft: PocketLinkDraft(
+                        title: item.title,
+                        url: item.url!,
+                        description: item.description!,
+                        collectionId: item.collectionId,
+                      ),
+                      onSubmit: onSubmit ?? (_) async {},
+                    ),
+                    child: const PocketLinkPage.edit(),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ],
+    );
+    addTearDown(router.dispose);
     return BlocProvider(
       create: (_) => CollectionsBloc(
         WatchCollections(collectionsRepository),
         CreateCollection(collectionsRepository),
       )..add(const CollectionsStarted()),
-      child: MaterialApp(
-        theme: AppTheme.light,
-        home: PocketLinkDetailPage(
-          item: item,
-          onSubmit: onSubmit ?? (_) async {},
-          onDelete: onDelete,
-        ),
-      ),
+      child: MaterialApp.router(theme: AppTheme.light, routerConfig: router),
     );
   }
 

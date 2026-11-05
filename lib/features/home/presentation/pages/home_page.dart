@@ -1,23 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/app_theme.dart';
-import '../../../collections/presentation/pages/collections_page.dart';
-import '../../../collections/presentation/bloc/collections_bloc.dart';
-import '../../../library/presentation/pages/library_page.dart';
-import '../../../notes/domain/repositories/note_repository.dart';
-import '../../../notes/domain/usecases/save_note.dart';
-import '../../../notes/presentation/pages/note_editor_page.dart';
-import '../../../pocket_link/domain/repositories/pocket_link_repository.dart';
-import '../../../pocket_link/domain/usecases/save_pocket_link.dart';
-import '../../../pocket_link/presentation/bloc/pocket_link_bloc.dart';
-import '../../../pocket_link/presentation/pages/pocket_link_page.dart';
-import '../../../profile/presentation/pages/profile_page.dart';
+
+import '../../../../core/router/app_routes.dart';
 import '../widgets/capture_speed_dial.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+  const HomePage({required this.navigationShell, super.key});
+
+  final StatefulNavigationShell navigationShell;
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -26,25 +19,16 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   static const _captureOverlayColor = Color(0xB3000000);
 
-  int _selectedIndex = 0;
+  int get _selectedIndex => widget.navigationShell.currentIndex;
   bool _isCaptureMenuExpanded = false;
 
-  late final List<_HomeDestination> _destinations = [
-    const _HomeDestination(
-      label: 'Library',
-      iconAsset: 'assets/icons/library.svg',
-      page: LibraryPage(),
-    ),
-    const _HomeDestination(
+  static const _destinations = [
+    _HomeDestination(label: 'Library', iconAsset: 'assets/icons/library.svg'),
+    _HomeDestination(
       label: 'Collections',
       iconAsset: 'assets/icons/folders.svg',
-      page: CollectionsPage(),
     ),
-    const _HomeDestination(
-      label: 'Profile',
-      iconAsset: 'assets/icons/profile.svg',
-      page: ProfilePage(),
-    ),
+    _HomeDestination(label: 'Profile', iconAsset: 'assets/icons/profile.svg'),
   ];
 
   @override
@@ -52,12 +36,7 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       body: Stack(
         children: [
-          IndexedStack(
-            index: _selectedIndex,
-            children: [
-              for (final destination in _destinations) destination.page,
-            ],
-          ),
+          widget.navigationShell,
           if (_isCaptureMenuExpanded)
             ModalBarrier(
               key: const ValueKey('capture-menu-content-barrier'),
@@ -85,7 +64,10 @@ class _HomePageState extends State<HomePage> {
             destinations: _destinations,
             selectedIndex: _selectedIndex,
             onSelected: (index) => setState(() {
-              _selectedIndex = index;
+              widget.navigationShell.goBranch(
+                index,
+                initialLocation: index == _selectedIndex,
+              );
               _isCaptureMenuExpanded = false;
             }),
           ),
@@ -107,33 +89,10 @@ class _HomePageState extends State<HomePage> {
     setState(() => _isCaptureMenuExpanded = false);
     switch (action) {
       case CaptureAction.note:
-        final repository = context.read<NoteRepository>();
-        Navigator.of(context).push(
-          MaterialPageRoute<void>(
-            builder: (_) => BlocProvider.value(
-              value: context.read<CollectionsBloc>(),
-              child: NoteEditorPage(
-                onSubmit: (draft) async {
-                  await SaveNote(repository)(draft);
-                },
-              ),
-            ),
-          ),
-        );
+        context.pushNamed(AppRoutes.newNote);
         return;
       case CaptureAction.pocketLink:
-        final repository = context.read<PocketLinkRepository>();
-        Navigator.of(context).push(
-          MaterialPageRoute<bool>(
-            builder: (_) => BlocProvider.value(
-              value: context.read<CollectionsBloc>(),
-              child: BlocProvider(
-                create: (_) => PocketLinkBloc(SavePocketLink(repository)),
-                child: const PocketLinkPage(),
-              ),
-            ),
-          ),
-        );
+        context.pushNamed(AppRoutes.newPocketLink);
         return;
       case CaptureAction.videoHighlight:
         return;
@@ -142,15 +101,10 @@ class _HomePageState extends State<HomePage> {
 }
 
 class _HomeDestination {
-  const _HomeDestination({
-    required this.label,
-    required this.iconAsset,
-    required this.page,
-  });
+  const _HomeDestination({required this.label, required this.iconAsset});
 
   final String label;
   final String iconAsset;
-  final Widget page;
 }
 
 class _BottomNavigation extends StatelessWidget {

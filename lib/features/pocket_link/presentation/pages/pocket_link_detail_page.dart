@@ -1,25 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../../core/router/app_routes.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../collections/domain/entities/collection_item.dart';
 import '../../../collections/presentation/bloc/collections_bloc.dart';
 import '../../../library/domain/entities/library_item.dart';
 import '../../domain/entities/pocket_link_draft.dart';
-import '../bloc/pocket_link_bloc.dart';
-import 'pocket_link_page.dart';
 
 class PocketLinkDetailPage extends StatefulWidget {
-  const PocketLinkDetailPage({
-    required this.item,
-    required this.onSubmit,
-    this.onDelete,
-    super.key,
-  });
+  const PocketLinkDetailPage({required this.item, this.onDelete, super.key});
 
   final LibraryItem item;
-  final Future<void> Function(PocketLinkDraft draft) onSubmit;
   final Future<void> Function()? onDelete;
 
   @override
@@ -95,25 +89,9 @@ class _PocketLinkDetailPageState extends State<PocketLinkDetailPage> {
   }
 
   Future<void> _openEditor() async {
-    final collectionsBloc = context.read<CollectionsBloc>();
-    final updatedDraft = await Navigator.of(context).push<PocketLinkDraft>(
-      MaterialPageRoute<PocketLinkDraft>(
-        builder: (_) => BlocProvider.value(
-          value: collectionsBloc,
-          child: BlocProvider(
-            create: (_) => PocketLinkBloc.edit(
-              initialDraft: PocketLinkDraft(
-                url: _url,
-                title: _title,
-                description: _description,
-                collectionId: _selectedCollectionId,
-              ),
-              onSubmit: widget.onSubmit,
-            ),
-            child: const PocketLinkPage.edit(),
-          ),
-        ),
-      ),
+    final updatedDraft = await context.pushNamed<PocketLinkDraft>(
+      AppRoutes.editPocketLink,
+      pathParameters: AppRoutes.id(widget.item.id),
     );
     if (updatedDraft == null || !mounted) return;
 

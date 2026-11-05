@@ -32,7 +32,8 @@ local SQLite storage, and reactive BLoC state management.
 
 ### Navigation and visual design
 
-- Switches between Library and Collections while preserving each page's state.
+- Uses `go_router` with separate Library, Collections, and Profile tab navigators,
+  preserving tab state while switching destinations.
 - Uses a floating capsule navigation bar with a subtle blurred edge shadow and
   safe-area-aware spacing.
 - Applies a shared color system, custom Inter and Lora fonts, SVG icons, and
@@ -59,8 +60,51 @@ local SQLite storage, and reactive BLoC state management.
 - Flutter and Material 3
 - Dart
 - `flutter_bloc` and `equatable`
+- `go_router`
 - Drift with SQLite
 - `flutter_svg`
+
+## Navigation
+
+`lib/core/router/app_router.dart` owns the route tree. `SnapNoteApp` creates one
+router for its lifetime and uses `MaterialApp.router`, with shared repositories
+and BLoCs above every navigator. `StatefulShellRoute.indexedStack` preserves each
+tab in memory; detail and editor routes use the root navigator to cover the tab
+bar. In-memory preservation does not restore unsaved drafts after process death.
+
+| Destination | URL |
+| --- | --- |
+| Library | `/library` |
+| Collections | `/collections` |
+| Profile | `/profile` |
+| New note | `/library/notes/new` |
+| Note detail and inline editing | `/library/notes/:id` |
+| New pocket link | `/library/links/new` |
+| Pocket link detail | `/library/links/:id` |
+| Edit pocket link | `/library/links/:id/edit` |
+| New collection | `/collections/new` |
+| Collection detail | `/collections/:id` |
+
+`/` redirects to Library. Use `AppRoutes` names and ID helpers at call sites:
+
+```dart
+final deleted = await context.pushNamed<bool>(
+  AppRoutes.note,
+  pathParameters: AppRoutes.id(item.id),
+);
+```
+
+Use `navigationShell.goBranch` for tab switches, `pushNamed<T>` for flows that
+return results, and `goNamed` for replacing the destination. Sheets and dialogs
+continue to use `Navigator` locally. Routes resolve IDs from the existing BLoCs
+without requiring `extra` objects, handle loading and retry, and show recovery
+screens for malformed IDs, missing records, and unknown paths. Open item screens
+retain their initial snapshot so database emissions do not discard editor input
+or interrupt a delete result.
+
+Flutter route resolution is covered by widget tests. OS app-link/universal-link
+associations and browser history still require verification on target devices;
+no custom URL scheme or associated domain is configured by this change.
 
 ## Documentation
 

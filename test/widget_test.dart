@@ -1,4 +1,8 @@
+import 'dart:async';
 import 'dart:convert';
+
+import 'package:go_router/go_router.dart';
+import 'package:snap_note/core/router/app_router.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -12,7 +16,6 @@ import 'package:snap_note/features/collections/domain/repositories/collections_r
 import 'package:snap_note/features/collections/domain/usecases/create_collection.dart';
 import 'package:snap_note/features/collections/domain/usecases/watch_collections.dart';
 import 'package:snap_note/features/collections/presentation/bloc/collections_bloc.dart';
-import 'package:snap_note/features/home/presentation/pages/home_page.dart';
 import 'package:snap_note/features/library/domain/entities/library_item.dart';
 import 'package:snap_note/features/library/domain/repositories/library_repository.dart';
 import 'package:snap_note/features/library/domain/usecases/watch_library.dart';
@@ -108,11 +111,75 @@ class _WidgetNoteRepository implements NoteRepository {
   }
 }
 
-void main() {
-  testWidgets('renders the mock library and switches tabs', (tester) async {
-    final noteRepository = _WidgetNoteRepository();
-    await tester.pumpWidget(
-      MaterialApp(
+class _ControlledLibraryRepository implements LibraryRepository {
+  final controller = StreamController<List<LibraryItem>>.broadcast();
+
+  @override
+  Stream<List<LibraryItem>> watchRecentItems() {
+    return controller.stream;
+  }
+}
+
+class _RetryLibraryRepository implements LibraryRepository {
+  bool failed = false;
+
+  @override
+  Stream<List<LibraryItem>> watchRecentItems() {
+    if (!failed) {
+      failed = true;
+      return Stream.error(StateError('Offline'));
+    }
+    return _WidgetLibraryRepository().watchRecentItems();
+  }
+}
+
+class _DeletingNoteRepository extends _WidgetNoteRepository {
+  _DeletingNoteRepository(this.library);
+  final _ControlledLibraryRepository library;
+
+  @override
+  Future<void> delete(int id) async {
+    library.controller.add([]);
+    // The database can emit before the delete Future completes.
+    await Future<void>.delayed(Duration.zero);
+    await super.delete(id);
+  }
+}
+
+Widget _buildRouterApp({
+  required GoRouter router,
+  NoteRepository? noteRepository,
+  LibraryRepository? libraryRepository,
+  CollectionsRepository? collectionsRepository,
+}) {
+  return MultiRepositoryProvider(
+    providers: [
+      RepositoryProvider<PocketLinkRepository>.value(
+        value: _WidgetPocketLinkRepository(),
+      ),
+      RepositoryProvider<NoteRepository>.value(
+        value: noteRepository ?? _WidgetNoteRepository(),
+      ),
+    ],
+    child: MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create: (_) => LibraryBloc(
+            WatchLibrary(libraryRepository ?? _WidgetLibraryRepository()),
+          )..add(const LibraryStarted()),
+        ),
+        BlocProvider(
+          create: (_) => CollectionsBloc(
+            WatchCollections(
+              collectionsRepository ?? _WidgetCollectionsRepository(),
+            ),
+            CreateCollection(
+              collectionsRepository ?? _WidgetCollectionsRepository(),
+            ),
+          )..add(const CollectionsStarted()),
+        ),
+      ],
+      child: MaterialApp.router(
         theme: AppTheme.light,
         localizationsDelegates: const [
           GlobalMaterialLocalizations.delegate,
@@ -121,31 +188,185 @@ void main() {
           FlutterQuillLocalizations.delegate,
         ],
         supportedLocales: FlutterQuillLocalizations.supportedLocales,
-        home: MultiRepositoryProvider(
-          providers: [
-            RepositoryProvider<PocketLinkRepository>.value(
-              value: _WidgetPocketLinkRepository(),
-            ),
-            RepositoryProvider<NoteRepository>.value(value: noteRepository),
-          ],
-          child: MultiBlocProvider(
-            providers: [
-              BlocProvider(
-                create: (_) =>
-                    LibraryBloc(WatchLibrary(_WidgetLibraryRepository()))
-                      ..add(const LibraryStarted()),
-              ),
-              BlocProvider(
-                create: (_) => CollectionsBloc(
-                  WatchCollections(_WidgetCollectionsRepository()),
-                  CreateCollection(_WidgetCollectionsRepository()),
-                )..add(const CollectionsStarted()),
-              ),
-            ],
-            child: const HomePage(),
-          ),
-        ),
+        routerConfig: router,
       ),
+    ),
+  );
+}
+
+void main() {
+  for (final entry in <String, String>{
+    '/library/notes/1': 'Note',
+    '/library/links/2': 'A practical guide to deep work',
+    '/library/links/2/edit': 'Edit pocket link',
+    '/collections/1': 'Deep work',
+    '/library/notes/new': 'Note',
+    '/library/links/new': 'Create pocket link',
+    '/collections/new': 'New collection',
+    '/profile': 'Your profile',
+  }.entries) {
+    testWidgets('cold route ${entry.key} loads without extra data', (
+      tester,
+    ) async {
+      final router = createAppRouter(initialLocation: entry.key);
+      addTearDown(router.dispose);
+      await tester.pumpWidget(_buildRouterApp(router: router));
+      await tester.pumpAndSettle();
+      expect(find.text(entry.value), findsWidgets);
+      expect(router.routeInformationProvider.value.uri.path, entry.key);
+      if (router.canPop()) {
+        await tester.binding.handlePopRoute();
+        await tester.pumpAndSettle();
+        expect(
+          router.routeInformationProvider.value.uri.path,
+          isNot(entry.key),
+        );
+      }
+    });
+  }
+
+  for (final entry in <String, String>{
+    '/unknown': 'Page not found.',
+    '/library/notes/nope': 'Invalid item ID.',
+    '/library/notes/0': 'Invalid item ID.',
+    '/library/notes/999': 'Item not found.',
+    '/library/notes/2': 'Item not found.',
+    '/collections/-1': 'Invalid collection ID.',
+    '/collections/999': 'Collection not found.',
+  }.entries) {
+    testWidgets('invalid destination ${entry.key} can recover', (tester) async {
+      final router = createAppRouter(initialLocation: entry.key);
+      addTearDown(router.dispose);
+      await tester.pumpWidget(_buildRouterApp(router: router));
+      await tester.pumpAndSettle();
+      expect(find.text(entry.value), findsOneWidget);
+      await tester.tap(find.text('Go to Library'));
+      await tester.pumpAndSettle();
+      expect(find.text('Room for ideas.'), findsOneWidget);
+    });
+  }
+
+  testWidgets('warm links and system back return to their parent', (
+    tester,
+  ) async {
+    final router = createAppRouter();
+    addTearDown(router.dispose);
+    await tester.pumpWidget(_buildRouterApp(router: router));
+    await tester.pumpAndSettle();
+    router.go('/collections/1');
+    await tester.pumpAndSettle();
+    expect(find.text('Deep work'), findsOneWidget);
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+    expect(find.text('Ideas, gathered.'), findsOneWidget);
+    router.go('/library/links/2/edit');
+    await tester.pumpAndSettle();
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+    expect(find.text('A practical guide to deep work'), findsOneWidget);
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+    expect(find.text('Room for ideas.'), findsOneWidget);
+  });
+
+  testWidgets('tab switching preserves collection search state', (
+    tester,
+  ) async {
+    final router = createAppRouter();
+    addTearDown(router.dispose);
+    await tester.pumpWidget(_buildRouterApp(router: router));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Collections'));
+    await tester.pumpAndSettle();
+    final field = find.byType(TextField);
+    await tester.enterText(field, 'Deep');
+    await tester.tap(find.text('Profile'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Collections'));
+    await tester.pumpAndSettle();
+    expect(
+      tester.widget<EditableText>(find.byType(EditableText)).controller.text,
+      'Deep',
+    );
+    expect(router.routeInformationProvider.value.uri.path, '/collections');
+  });
+
+  testWidgets('a cold destination waits for its data', (tester) async {
+    final library = _ControlledLibraryRepository();
+    final router = createAppRouter(initialLocation: '/library/notes/1');
+    addTearDown(router.dispose);
+    addTearDown(library.controller.close);
+    await tester.pumpWidget(
+      _buildRouterApp(router: router, libraryRepository: library),
+    );
+    await tester.pump();
+    expect(find.byType(CircularProgressIndicator), findsOneWidget);
+    library.controller.add(
+      await _WidgetLibraryRepository().watchRecentItems().first,
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('Note'), findsOneWidget);
+  });
+
+  testWidgets('a failed destination can retry loading', (tester) async {
+    final router = createAppRouter(initialLocation: '/library/notes/1');
+    addTearDown(router.dispose);
+    await tester.pumpWidget(
+      _buildRouterApp(
+        router: router,
+        libraryRepository: _RetryLibraryRepository(),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('Could not load this item.'), findsOneWidget);
+    await tester.tap(find.text('Retry'));
+    await tester.pump();
+    // Stream cancellation can complete in the root async zone. Yield to it
+    // before draining the widget test's fake microtask queue.
+    await tester.runAsync(() async {});
+    await tester.pumpAndSettle();
+    expect(find.text('Note'), findsOneWidget);
+  });
+
+  testWidgets(
+    'a database deletion emission still returns its navigation result',
+    (tester) async {
+      final library = _ControlledLibraryRepository();
+      final notes = _DeletingNoteRepository(library);
+      final router = createAppRouter();
+      addTearDown(router.dispose);
+      addTearDown(library.controller.close);
+      await tester.pumpWidget(
+        _buildRouterApp(
+          router: router,
+          libraryRepository: library,
+          noteRepository: notes,
+        ),
+      );
+      await tester.pump();
+      library.controller.add(
+        await _WidgetLibraryRepository().watchRecentItems().first,
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('note-card-1')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('note-detail-more-button')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('note-detail-delete-option')));
+      await tester.pumpAndSettle();
+      expect(notes.deletedIds, [1]);
+      expect(find.text('Note deleted.'), findsOneWidget);
+      expect(find.text('Room for ideas.'), findsOneWidget);
+      expect(find.text('Item not found.'), findsNothing);
+    },
+  );
+
+  testWidgets('renders the mock library and switches tabs', (tester) async {
+    final noteRepository = _WidgetNoteRepository();
+    final router = createAppRouter();
+    addTearDown(router.dispose);
+    await tester.pumpWidget(
+      _buildRouterApp(router: router, noteRepository: noteRepository),
     );
     await tester.pumpAndSettle();
 

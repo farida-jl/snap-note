@@ -3,6 +3,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
+import 'package:snap_note/core/router/app_routes.dart';
+import 'package:snap_note/features/collections/presentation/pages/create_new_collection_page.dart';
 import 'package:snap_note/core/theme/app_theme.dart';
 import 'package:snap_note/features/collections/domain/entities/collection_item.dart';
 import 'package:snap_note/features/collections/domain/entities/new_collection.dart';
@@ -103,6 +106,26 @@ class _CollectionAssignmentHarnessState
   }
 }
 
+Widget _pickerApp({required Widget home}) {
+  final router = GoRouter(
+    routes: [
+      GoRoute(
+        path: '/',
+        builder: (_, _) => home,
+        routes: [
+          GoRoute(
+            path: 'new',
+            name: AppRoutes.newCollection,
+            builder: (_, _) => const CreateNewCollectionPage(),
+          ),
+        ],
+      ),
+    ],
+  );
+  addTearDown(router.dispose);
+  return MaterialApp.router(theme: AppTheme.light, routerConfig: router);
+}
+
 Future<CollectionsBloc> _pumpPicker(
   WidgetTester tester, {
   ValueChanged<CollectionItem>? onSelected,
@@ -115,8 +138,7 @@ Future<CollectionsBloc> _pumpPicker(
   await tester.pumpWidget(
     BlocProvider.value(
       value: bloc,
-      child: MaterialApp(
-        theme: AppTheme.light,
+      child: _pickerApp(
         home: Scaffold(
           body: CollectionAssignment(
             assignmentKey: const ValueKey('collection-assignment'),
@@ -191,10 +213,7 @@ void main() {
     await tester.pumpWidget(
       BlocProvider.value(
         value: bloc,
-        child: MaterialApp(
-          theme: AppTheme.light,
-          home: const _CollectionAssignmentHarness(),
-        ),
+        child: _pickerApp(home: const _CollectionAssignmentHarness()),
       ),
     );
     repository.emit(_collections);

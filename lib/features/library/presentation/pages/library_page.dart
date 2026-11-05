@@ -1,14 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../../core/router/app_routes.dart';
 import '../../../../core/theme/app_theme.dart';
-import '../../../collections/presentation/bloc/collections_bloc.dart';
-import '../../../notes/domain/repositories/note_repository.dart';
-import '../../../notes/domain/usecases/update_note.dart';
-import '../../../notes/presentation/pages/note_detail_page.dart';
-import '../../../pocket_link/domain/repositories/pocket_link_repository.dart';
-import '../../../pocket_link/presentation/pages/pocket_link_detail_page.dart';
 import '../../domain/entities/library_item.dart';
 import '../bloc/library_bloc.dart';
 import '../components/link_card.dart';
@@ -357,19 +353,9 @@ class _LibraryCard extends StatelessWidget {
   }
 
   Future<void> _openNote(BuildContext context) async {
-    final noteRepository = context.read<NoteRepository>();
-    final collectionsBloc = context.read<CollectionsBloc>();
-    final deleted = await Navigator.of(context).push<bool>(
-      MaterialPageRoute<bool>(
-        builder: (_) => BlocProvider.value(
-          value: collectionsBloc,
-          child: NoteDetailPage(
-            item: item,
-            onSubmit: (draft) => UpdateNote(noteRepository)(item.id, draft),
-            onDelete: () => noteRepository.delete(item.id),
-          ),
-        ),
-      ),
+    final deleted = await context.pushNamed<bool>(
+      AppRoutes.note,
+      pathParameters: AppRoutes.id(item.id),
     );
     if (deleted != true || !context.mounted) return;
     ScaffoldMessenger.of(context)
@@ -378,19 +364,9 @@ class _LibraryCard extends StatelessWidget {
   }
 
   Future<void> _openPocketLink(BuildContext context) async {
-    final repository = context.read<PocketLinkRepository>();
-    final collectionsBloc = context.read<CollectionsBloc>();
-    final deleted = await Navigator.of(context).push<bool>(
-      MaterialPageRoute<bool>(
-        builder: (_) => BlocProvider.value(
-          value: collectionsBloc,
-          child: PocketLinkDetailPage(
-            item: item,
-            onSubmit: (draft) => repository.update(item.id, draft),
-            onDelete: () => repository.delete(item.id),
-          ),
-        ),
-      ),
+    final deleted = await context.pushNamed<bool>(
+      AppRoutes.pocketLink,
+      pathParameters: AppRoutes.id(item.id),
     );
     if (deleted != true || !context.mounted) return;
     ScaffoldMessenger.of(context)

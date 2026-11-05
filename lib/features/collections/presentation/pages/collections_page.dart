@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../../core/router/app_routes.dart';
 import '../../../../core/theme/app_theme.dart';
-import '../../../library/presentation/bloc/library_bloc.dart';
 import '../../domain/entities/collection_item.dart';
 import '../bloc/collections_bloc.dart';
-import 'collection_detail_page.dart';
-import 'create_new_collection_page.dart';
 
 class CollectionsPage extends StatelessWidget {
   const CollectionsPage({super.key});
@@ -173,14 +172,7 @@ class _SectionHeader extends StatelessWidget {
           ),
         ),
         TextButton.icon(
-          onPressed: () => Navigator.of(context).push(
-            MaterialPageRoute<int>(
-              builder: (_) => BlocProvider.value(
-                value: context.read<CollectionsBloc>(),
-                child: const CreateNewCollectionPage(),
-              ),
-            ),
-          ),
+          onPressed: () => context.pushNamed<int>(AppRoutes.newCollection),
           style: TextButton.styleFrom(
             foregroundColor: context.appColors.textSecondary,
             padding: const EdgeInsets.symmetric(horizontal: 8),
@@ -204,17 +196,10 @@ class _CollectionCard extends StatelessWidget {
     return Material(
       color: Color(collection.colorValue),
       child: InkWell(
-        onTap: () {
-          final libraryBloc = context.read<LibraryBloc>();
-          Navigator.of(context).push(
-            MaterialPageRoute<void>(
-              builder: (_) => BlocProvider.value(
-                value: libraryBloc,
-                child: CollectionDetailPage(collection: collection),
-              ),
-            ),
-          );
-        },
+        onTap: () => context.pushNamed<void>(
+          AppRoutes.collection,
+          pathParameters: AppRoutes.id(collection.id),
+        ),
         child: Container(
           padding: const EdgeInsets.all(15),
           decoration: BoxDecoration(

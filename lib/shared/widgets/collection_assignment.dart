@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:go_router/go_router.dart';
+
+import '../../core/router/app_routes.dart';
 
 import '../../core/theme/app_theme.dart';
 import '../../features/collections/domain/entities/collection_item.dart';
 import '../../features/collections/presentation/bloc/collections_bloc.dart';
-import '../../features/collections/presentation/pages/create_new_collection_page.dart';
 
 class CollectionAssignment extends StatelessWidget {
   const CollectionAssignment({
@@ -26,7 +28,6 @@ class CollectionAssignment extends StatelessWidget {
   Future<void> _openPicker(BuildContext context) async {
     if (onSelected == null) return;
 
-    final navigator = Navigator.of(context);
     final collectionsBloc = context.read<CollectionsBloc>();
 
     final pickerResult = await showModalBottomSheet<Object>(
@@ -114,13 +115,8 @@ class CollectionAssignment extends StatelessWidget {
     }
     if (pickerResult != _CollectionPickerAction.create) return;
 
-    final createdCollectionId = await navigator.push<int>(
-      MaterialPageRoute<int>(
-        builder: (_) => BlocProvider.value(
-          value: collectionsBloc,
-          child: const CreateNewCollectionPage(),
-        ),
-      ),
+    final createdCollectionId = await context.pushNamed<int>(
+      AppRoutes.newCollection,
     );
     if (createdCollectionId == null || !context.mounted) return;
 
