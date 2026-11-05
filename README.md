@@ -119,6 +119,16 @@ dart run build_runner build --delete-conflicting-outputs
 flutter run
 ```
 
+To run the web app with Drift's browser database support:
+
+```sh
+flutter run -d chrome
+```
+
+The web target uses `sqlite3.wasm` and a Drift worker from the pinned Drift
+version. `flutter run` serves the WASM file with the required MIME type. For
+production hosting, configure `.wasm` files as `application/wasm`.
+
 ## Verify
 
 ```sh
