@@ -10,7 +10,6 @@ import '../../../../shared/widgets/navigation_bar/standart_nav_bar.dart';
 import '../../../collections/domain/entities/collection_item.dart';
 import '../../../collections/presentation/bloc/collections_bloc.dart';
 import '../../domain/entities/note_draft.dart';
-import 'quill_editor_page.dart';
 
 class NoteEditorPage extends StatefulWidget {
   const NoteEditorPage({
@@ -120,14 +119,6 @@ class _NoteEditorPageState extends State<NoteEditorPage> {
     if (!_isEditing) setState(() => _isEditing = true);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) _titleFocusNode.requestFocus();
-    });
-  }
-
-  void _beginBodyEditing() {
-    if (!_bodyController.readOnly) return;
-    setState(() {
-      _isEditing = true;
-      _bodyController.readOnly = false;
     });
   }
 
@@ -276,88 +267,150 @@ class _NoteEditorPageState extends State<NoteEditorPage> {
           children: [
             StandartNavigationBar(title: 'Note', trailing: _buildTrailing()),
             Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SingleChildScrollView(
-                    physics: const BouncingScrollPhysics(),
-                    padding: const EdgeInsets.fromLTRB(10, 16, 10, 0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        TextField(
-                          key: const ValueKey('note-title-field'),
-                          controller: _titleController,
-                          focusNode: _titleFocusNode,
-                          readOnly: widget.isExistingNote && !_isEditing,
-                          onTap: widget.isExistingNote && !_isEditing
-                              ? _beginTitleEditing
+              child: NestedScrollView(
+                headerSliverBuilder:
+                    (BuildContext context, bool innerBoxIsScrolled) {
+                      return <Widget>[
+                        SliverAppBar(
+                          surfaceTintColor: context.appColors.background,
+                          automaticallyImplyLeading: false,
+                          expandedHeight: 250.0,
+                          floating: false,
+                          toolbarHeight: 0,
+                          pinned: true,
+                          backgroundColor: context.appColors.background,
+                          elevation: 0.0,
+                          flexibleSpace: FlexibleSpaceBar(
+                            background: Padding(
+                              padding: const EdgeInsets.all(10.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  TextField(
+                                    key: const ValueKey('note-title-field'),
+                                    controller: _titleController,
+                                    focusNode: _titleFocusNode,
+                                    readOnly:
+                                        widget.isExistingNote && !_isEditing,
+                                    onTap: widget.isExistingNote && !_isEditing
+                                        ? _beginTitleEditing
+                                        : null,
+                                    maxLines: null,
+                                    minLines: 1,
+                                    textCapitalization:
+                                        TextCapitalization.sentences,
+                                    textInputAction: TextInputAction.next,
+                                    onSubmitted: (_) =>
+                                        _bodyFocusNode.requestFocus(),
+                                    decoration: InputDecoration.collapsed(
+                                      hintText: 'Note title',
+                                      hintStyle: TextStyle(
+                                        color: colors.textSecondary,
+                                      ),
+                                    ),
+                                    style: TextStyle(
+                                      fontFamily: 'Lora',
+                                      fontSize: 32,
+                                      height: 1.18,
+                                      letterSpacing: -.8,
+                                      color: colors.textPrimary,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 10),
+                                  Text(
+                                    _formatDateTime(_createdAt),
+                                    key: const ValueKey(
+                                      'note-detail-date-time',
+                                    ),
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: colors.textSecondary,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 14),
+                                  CollectionAssignment(
+                                    selectedCollection: selectedCollection,
+                                    collections: collections,
+                                    assignmentKey: const ValueKey(
+                                      'note-collection-assignment',
+                                    ),
+                                    onSelected: collectionsState == null
+                                        ? null
+                                        : (collection) {
+                                            setState(() {
+                                              _selectedCollectionId =
+                                                  collection.id;
+                                            });
+                                            _refreshDirtyState();
+                                          },
+                                  ),
+                                  if (!_bodyHasFocus) ...[
+                                    const SizedBox(height: 2),
+                                    const Divider(),
+                                  ],
+                                ],
+                              ),
+                            ),
+                          ),
+                          bottom: _bodyHasFocus
+                              ? PreferredSize(
+                                  preferredSize: const Size.fromHeight(70),
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 10,
+                                    ),
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        vertical: 10,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: context.appColors.subtle,
+                                        border: Border.all(
+                                          color: const Color(0xFF426071),
+                                        ),
+                                      ),
+                                      child: QuillSimpleToolbar(
+                                        key: const ValueKey(
+                                          'note-content-toolbar',
+                                        ),
+                                        controller: _bodyController,
+                                        config: QuillSimpleToolbarConfig(
+                                          color: context.appColors.subtle,
+                                          sectionDividerSpace: 0,
+                                          multiRowsDisplay: false,
+                                          showFontFamily: false,
+                                          showFontSize: false,
+                                          showStrikeThrough: false,
+                                          showInlineCode: false,
+                                          showBackgroundColorButton: false,
+                                          showAlignmentButtons: false,
+                                          showCodeBlock: false,
+                                          showIndent: false,
+                                          showSearchButton: false,
+                                          showSubscript: false,
+                                          showSuperscript: false,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                )
                               : null,
-                          maxLines: null,
-                          minLines: 1,
-                          textCapitalization: TextCapitalization.sentences,
-                          textInputAction: TextInputAction.next,
-                          onSubmitted: (_) => _bodyFocusNode.requestFocus(),
-                          decoration: InputDecoration.collapsed(
-                            hintText: 'Note title',
-                            hintStyle: TextStyle(color: colors.textSecondary),
-                          ),
-                          style: TextStyle(
-                            fontFamily: 'Lora',
-                            fontSize: 32,
-                            height: 1.18,
-                            letterSpacing: -.8,
-                            color: colors.textPrimary,
-                          ),
                         ),
-                        const SizedBox(height: 10),
-                        Text(
-                          _formatDateTime(_createdAt),
-                          key: const ValueKey('note-detail-date-time'),
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: colors.textSecondary,
-                          ),
-                        ),
-                        const SizedBox(height: 14),
-                        CollectionAssignment(
-                          selectedCollection: selectedCollection,
-                          collections: collections,
-                          assignmentKey: const ValueKey(
-                            'note-collection-assignment',
-                          ),
-                          onSelected: collectionsState == null
-                              ? null
-                              : (collection) {
-                                  setState(() {
-                                    _selectedCollectionId = collection.id;
-                                  });
-                                  _refreshDirtyState();
-                                },
-                        ),
-                        if (!_bodyHasFocus) ...[
-                          const SizedBox(height: 2),
-                          const Divider(),
-                        ],
-                        const SizedBox(height: 6),
-                      ],
-                    ),
+                      ];
+                    },
+                body: QuillEditor(
+                  key: const ValueKey('note-content-field'),
+                  controller: _bodyController,
+                  focusNode: _bodyFocusNode,
+                  scrollController: _bodyScrollController,
+                  config: QuillEditorConfig(
+                    scrollPhysics: const NeverScrollableScrollPhysics(),
+                    expands: true,
+                    showCursor: true,
+                    padding: const EdgeInsets.fromLTRB(12, 24, 14, 12),
+                    placeholder: 'Start writing…',
                   ),
-                  Expanded(
-                    child: Listener(
-                      onPointerDown: (_) => _beginBodyEditing(),
-                      child: QuillEditorPage(
-                        editorKey: const ValueKey('note-content-field'),
-                        toolbarKey: const ValueKey('note-content-toolbar'),
-                        controller: _bodyController,
-                        focusNode: _bodyFocusNode,
-                        scrollController: _bodyScrollController,
-                        showToolbar: _bodyHasFocus,
-                        placeholder: 'Start writing…',
-                      ),
-                    ),
-                  ),
-                ],
+                ),
               ),
             ),
           ],

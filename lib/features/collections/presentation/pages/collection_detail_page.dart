@@ -22,9 +22,11 @@ class CollectionDetailPage extends StatelessWidget {
       body: SafeArea(
         child: Column(
           children: [
-            StandartNavigationBar(title: '', 
-                                  backgroundColor: context.appColors.canvas,
-                                  navIconColor: AppColors.gold300,),
+            StandartNavigationBar(
+              title: '',
+              backgroundColor: context.appColors.canvas,
+              navIconColor: AppColors.gold300,
+            ),
             Expanded(
               child: BlocBuilder<LibraryBloc, LibraryState>(
                 builder: (context, state) {
@@ -57,7 +59,10 @@ class CollectionDetailPage extends StatelessWidget {
                               ),
                               if (collection.description.trim().isNotEmpty) ...[
                                 Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 6,
+                                  ),
                                   child: Text(
                                     collection.description,
                                     maxLines: 2,

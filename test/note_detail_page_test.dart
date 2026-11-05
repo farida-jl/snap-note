@@ -92,6 +92,7 @@ void main() {
 
     await tester.tap(find.byKey(const ValueKey('save-note-button')));
     await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('note-content-toolbar')), findsNothing);
 
     await tester.tap(find.byKey(const ValueKey('note-detail-more-button')));
     await tester.pumpAndSettle();

@@ -45,7 +45,10 @@ class StandartNavigationBar extends StatelessWidget {
               child: IconButton(
                 tooltip: 'Close',
                 onPressed: () => Navigator.of(context).maybePop(),
-                icon: Icon(Icons.chevron_left, color: navIconColor ?? AppColors.slate800),
+                icon: Icon(
+                  Icons.chevron_left,
+                  color: navIconColor ?? context.appColors.primary,
+                ),
               ),
             ),
             if (trailing case final trailing?)
