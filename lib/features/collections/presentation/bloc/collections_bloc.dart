@@ -1,108 +1,23 @@
 import 'dart:async';
 
-import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../domain/entities/collection_item.dart';
-import '../../domain/entities/new_collection.dart';
 import '../../domain/usecases/create_collection.dart';
 import '../../domain/usecases/watch_collections.dart';
+import 'collections_event.dart';
+import 'collections_state.dart';
 
-sealed class CollectionsEvent extends Equatable {
-  const CollectionsEvent();
-
-  @override
-  List<Object?> get props => [];
-}
-
-final class CollectionsStarted extends CollectionsEvent {
-  const CollectionsStarted();
-}
-
-final class CollectionCreationRequested extends CollectionsEvent {
-  const CollectionCreationRequested(this.collection);
-
-  final NewCollection collection;
-
-  @override
-  List<Object?> get props => [collection];
-}
-
-final class _CollectionsChanged extends CollectionsEvent {
-  const _CollectionsChanged(this.collections);
-
-  final List<CollectionItem> collections;
-
-  @override
-  List<Object?> get props => [collections];
-}
-
-final class _CollectionsFailed extends CollectionsEvent {
-  const _CollectionsFailed(this.message);
-
-  final String message;
-
-  @override
-  List<Object?> get props => [message];
-}
-
-enum CollectionsStatus { initial, loading, success, failure }
-
-enum CollectionCreationStatus { idle, saving, success, failure }
-
-class CollectionsState extends Equatable {
-  const CollectionsState({
-    this.status = CollectionsStatus.initial,
-    this.collections = const [],
-    this.message,
-    this.creationStatus = CollectionCreationStatus.idle,
-    this.creationMessage,
-    this.createdCollectionId,
-  });
-
-  final CollectionsStatus status;
-  final List<CollectionItem> collections;
-  final String? message;
-  final CollectionCreationStatus creationStatus;
-  final String? creationMessage;
-  final int? createdCollectionId;
-
-  CollectionsState copyWith({
-    CollectionsStatus? status,
-    List<CollectionItem>? collections,
-    String? message,
-    CollectionCreationStatus? creationStatus,
-    String? creationMessage,
-    int? createdCollectionId,
-  }) {
-    return CollectionsState(
-      status: status ?? this.status,
-      collections: collections ?? this.collections,
-      message: message,
-      creationStatus: creationStatus ?? this.creationStatus,
-      creationMessage: creationMessage,
-      createdCollectionId: createdCollectionId,
-    );
-  }
-
-  @override
-  List<Object?> get props => [
-    status,
-    collections,
-    message,
-    creationStatus,
-    creationMessage,
-    createdCollectionId,
-  ];
-}
+export 'collections_event.dart';
+export 'collections_state.dart';
 
 class CollectionsBloc extends Bloc<CollectionsEvent, CollectionsState> {
   CollectionsBloc(this._watchCollections, this._createCollection)
     : super(const CollectionsState()) {
     on<CollectionsStarted>(_onStarted);
     on<CollectionCreationRequested>(_onCreationRequested);
-    on<_CollectionsChanged>(_onChanged);
-    on<_CollectionsFailed>(_onFailed);
+    on<CollectionsChanged>(_onChanged);
+    on<CollectionsFailed>(_onFailed);
   }
 
   final WatchCollections _watchCollections;
@@ -117,17 +32,17 @@ class CollectionsBloc extends Bloc<CollectionsEvent, CollectionsState> {
     try {
       await _subscription?.cancel();
       _subscription = _watchCollections().listen(
-        (collections) => add(_CollectionsChanged(collections)),
+        (collections) => add(CollectionsChanged(collections)),
         onError: (Object error, StackTrace stackTrace) {
-          add(_CollectionsFailed(error.toString()));
+          add(CollectionsFailed(error.toString()));
         },
       );
     } catch (error) {
-      add(_CollectionsFailed(error.toString()));
+      add(CollectionsFailed(error.toString()));
     }
   }
 
-  void _onChanged(_CollectionsChanged event, Emitter<CollectionsState> emit) {
+  void _onChanged(CollectionsChanged event, Emitter<CollectionsState> emit) {
     emit(
       state.copyWith(
         status: CollectionsStatus.success,
@@ -136,7 +51,7 @@ class CollectionsBloc extends Bloc<CollectionsEvent, CollectionsState> {
     );
   }
 
-  void _onFailed(_CollectionsFailed event, Emitter<CollectionsState> emit) {
+  void _onFailed(CollectionsFailed event, Emitter<CollectionsState> emit) {
     emit(
       state.copyWith(status: CollectionsStatus.failure, message: event.message),
     );

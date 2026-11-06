@@ -1,74 +1,20 @@
 import 'dart:async';
 
-import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../domain/entities/library_item.dart';
 import '../../domain/usecases/watch_library.dart';
+import 'library_event.dart';
+import 'library_state.dart';
 
-sealed class LibraryEvent extends Equatable {
-  const LibraryEvent();
-
-  @override
-  List<Object?> get props => [];
-}
-
-final class LibraryStarted extends LibraryEvent {
-  const LibraryStarted();
-}
-
-final class _LibraryItemsChanged extends LibraryEvent {
-  const _LibraryItemsChanged(this.items);
-
-  final List<LibraryItem> items;
-
-  @override
-  List<Object?> get props => [items];
-}
-
-final class _LibraryFailed extends LibraryEvent {
-  const _LibraryFailed(this.message);
-
-  final String message;
-
-  @override
-  List<Object?> get props => [message];
-}
-
-enum LibraryStatus { initial, loading, success, failure }
-
-class LibraryState extends Equatable {
-  const LibraryState({
-    this.status = LibraryStatus.initial,
-    this.items = const [],
-    this.message,
-  });
-
-  final LibraryStatus status;
-  final List<LibraryItem> items;
-  final String? message;
-
-  LibraryState copyWith({
-    LibraryStatus? status,
-    List<LibraryItem>? items,
-    String? message,
-  }) {
-    return LibraryState(
-      status: status ?? this.status,
-      items: items ?? this.items,
-      message: message,
-    );
-  }
-
-  @override
-  List<Object?> get props => [status, items, message];
-}
+export 'library_event.dart';
+export 'library_state.dart';
 
 class LibraryBloc extends Bloc<LibraryEvent, LibraryState> {
   LibraryBloc(this._watchLibrary) : super(const LibraryState()) {
     on<LibraryStarted>(_onStarted);
-    on<_LibraryItemsChanged>(_onItemsChanged);
-    on<_LibraryFailed>(_onFailed);
+    on<LibraryItemsChanged>(_onItemsChanged);
+    on<LibraryFailed>(_onFailed);
   }
 
   final WatchLibrary _watchLibrary;
@@ -82,21 +28,21 @@ class LibraryBloc extends Bloc<LibraryEvent, LibraryState> {
     try {
       await _subscription?.cancel();
       _subscription = _watchLibrary().listen(
-        (items) => add(_LibraryItemsChanged(items)),
+        (items) => add(LibraryItemsChanged(items)),
         onError: (Object error, StackTrace stackTrace) {
-          add(_LibraryFailed(error.toString()));
+          add(LibraryFailed(error.toString()));
         },
       );
     } catch (error) {
-      add(_LibraryFailed(error.toString()));
+      add(LibraryFailed(error.toString()));
     }
   }
 
-  void _onItemsChanged(_LibraryItemsChanged event, Emitter<LibraryState> emit) {
+  void _onItemsChanged(LibraryItemsChanged event, Emitter<LibraryState> emit) {
     emit(state.copyWith(status: LibraryStatus.success, items: event.items));
   }
 
-  void _onFailed(_LibraryFailed event, Emitter<LibraryState> emit) {
+  void _onFailed(LibraryFailed event, Emitter<LibraryState> emit) {
     emit(state.copyWith(status: LibraryStatus.failure, message: event.message));
   }
 
