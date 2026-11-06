@@ -4,6 +4,9 @@ Stash Shelf is a calm, offline-first Flutter app for keeping notes, useful links
 and memorable video moments together. It uses a warm editorial interface,
 local SQLite storage, and reactive BLoC state management.
 
+# Stash Shelf Web Deploy
+https://stash-shelf.vercel.app/
+
 ## Features
 
 ### Library
