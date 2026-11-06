@@ -7,7 +7,7 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../shared/widgets/cards/card_surface.dart';
 import '../../../../shared/widgets/type_badge.dart';
 import '../../domain/entities/library_item.dart';
-import '../utils/relative_time.dart';
+import '../../../../core/utils/relative_time.dart';
 
 class NoteCard extends StatelessWidget {
   const NoteCard({required this.item, this.onTap, super.key});

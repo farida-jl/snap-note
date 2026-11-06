@@ -80,7 +80,7 @@ class _SnapNoteAppState extends State<SnapNoteApp> {
           ),
         ],
         child: MaterialApp.router(
-          title: 'Snap Note',
+          title: 'Stash Shelf',
           debugShowCheckedModeBanner: false,
           localizationsDelegates: const [
             GlobalMaterialLocalizations.delegate,

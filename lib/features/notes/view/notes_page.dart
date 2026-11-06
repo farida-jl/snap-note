@@ -42,7 +42,7 @@ class NotesPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Snap Note')),
+      appBar: AppBar(title: const Text('Stash Shelf')),
       body: BlocBuilder<NotesBloc, NotesState>(
         builder: (context, state) {
           if (state.notes.isEmpty) {

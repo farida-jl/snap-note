@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:snap_note/features/library/presentation/utils/relative_time.dart';
+import 'package:snap_note/core/utils/relative_time.dart';
 
 void main() {
   final now = DateTime(2026, 11, 2, 12);

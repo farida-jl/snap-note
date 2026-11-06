@@ -119,7 +119,7 @@ class RouteMessagePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('Snap Note')),
+    appBar: AppBar(title: const Text('Stash Shelf')),
     body: Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
