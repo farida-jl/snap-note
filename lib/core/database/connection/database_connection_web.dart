@@ -4,7 +4,7 @@ import 'package:drift/wasm.dart';
 LazyDatabase createDatabaseConnection() {
   return LazyDatabase(() async {
     final result = await WasmDatabase.open(
-      databaseName: 'snap_note',
+      databaseName: 'stash_shelf',
       sqlite3Uri: Uri.parse('sqlite3.wasm'),
       driftWorkerUri: Uri.parse('drift_worker.dart.js'),
     );

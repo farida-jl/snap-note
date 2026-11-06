@@ -22,16 +22,16 @@ import 'features/pocket_link/data/datasources/pocket_link_local_data_source.dart
 import 'features/pocket_link/data/repositories/pocket_link_repository_impl.dart';
 import 'features/pocket_link/domain/repositories/pocket_link_repository.dart';
 
-class SnapNoteApp extends StatefulWidget {
-  const SnapNoteApp({super.key, this.database});
+class StashShelfApp extends StatefulWidget {
+  const StashShelfApp({super.key, this.database});
 
   final AppDatabase? database;
 
   @override
-  State<SnapNoteApp> createState() => _SnapNoteAppState();
+  State<StashShelfApp> createState() => _StashShelfAppState();
 }
 
-class _SnapNoteAppState extends State<SnapNoteApp> {
+class _StashShelfAppState extends State<StashShelfApp> {
   late final AppDatabase _database = widget.database ?? AppDatabase();
   late final bool _ownsDatabase = widget.database == null;
   late final PocketLinkRepository _pocketLinkRepository =

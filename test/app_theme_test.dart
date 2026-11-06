@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:snap_note/core/theme/app_theme.dart';
+import 'package:stash_shelf/core/theme/app_theme.dart';
 
 void main() {
   test('light theme exposes the light semantic color set', () {

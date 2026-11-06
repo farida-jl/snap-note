@@ -1,4 +1,4 @@
-package com.example.snap_note
+package com.example.stash_shelf
 
 import io.flutter.embedding.android.FlutterActivity
 

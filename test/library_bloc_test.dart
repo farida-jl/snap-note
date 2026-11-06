@@ -1,8 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:snap_note/features/library/domain/entities/library_item.dart';
-import 'package:snap_note/features/library/domain/repositories/library_repository.dart';
-import 'package:snap_note/features/library/domain/usecases/watch_library.dart';
-import 'package:snap_note/features/library/presentation/bloc/library_bloc.dart';
+import 'package:stash_shelf/features/library/domain/entities/library_item.dart';
+import 'package:stash_shelf/features/library/domain/repositories/library_repository.dart';
+import 'package:stash_shelf/features/library/domain/usecases/watch_library.dart';
+import 'package:stash_shelf/features/library/presentation/bloc/library_bloc.dart';
 
 class _FakeLibraryRepository implements LibraryRepository {
   final items = Stream<List<LibraryItem>>.value([

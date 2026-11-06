@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:snap_note/core/theme/app_theme.dart';
+import 'package:stash_shelf/core/theme/app_theme.dart';
 
 class CardSurface extends StatelessWidget {
   const CardSurface({required this.child, super.key});

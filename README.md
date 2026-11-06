@@ -66,7 +66,7 @@ local SQLite storage, and reactive BLoC state management.
 
 ## Navigation
 
-`lib/core/router/app_router.dart` owns the route tree. `SnapNoteApp` creates one
+`lib/core/router/app_router.dart` owns the route tree. `StashShelfApp` creates one
 router for its lifetime and uses `MaterialApp.router`, with shared repositories
 and BLoCs above every navigator. `StatefulShellRoute.indexedStack` preserves each
 tab in memory; detail and editor routes use the root navigator to cover the tab

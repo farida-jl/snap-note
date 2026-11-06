@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:snap_note/shared/widgets/input_field/input_field.dart';
-import 'package:snap_note/shared/widgets/navigation_bar/standart_nav_bar.dart';
+import 'package:stash_shelf/shared/widgets/input_field/input_field.dart';
+import 'package:stash_shelf/shared/widgets/navigation_bar/standart_nav_bar.dart';
 
 import '../../../../core/theme/app_theme.dart';
 import '../../../../shared/widgets/collection_assignment.dart';

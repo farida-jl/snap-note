@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:snap_note/core/theme/app_theme.dart';
-import 'package:snap_note/features/library/domain/entities/library_item.dart';
-import 'package:snap_note/features/notes/domain/entities/note_draft.dart';
-import 'package:snap_note/features/notes/presentation/pages/note_detail_page.dart';
+import 'package:stash_shelf/core/theme/app_theme.dart';
+import 'package:stash_shelf/features/library/domain/entities/library_item.dart';
+import 'package:stash_shelf/features/notes/domain/entities/note_draft.dart';
+import 'package:stash_shelf/features/notes/presentation/pages/note_detail_page.dart';
 
 void main() {
   Widget buildSubject({

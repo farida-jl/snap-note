@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:snap_note/core/theme/app_theme.dart';
-import 'package:snap_note/features/collections/domain/entities/collection_item.dart';
-import 'package:snap_note/features/collections/presentation/pages/collection_detail_page.dart';
-import 'package:snap_note/features/library/domain/entities/library_item.dart';
-import 'package:snap_note/features/library/domain/repositories/library_repository.dart';
-import 'package:snap_note/features/library/domain/usecases/watch_library.dart';
-import 'package:snap_note/features/library/presentation/bloc/library_bloc.dart';
+import 'package:stash_shelf/core/theme/app_theme.dart';
+import 'package:stash_shelf/features/collections/domain/entities/collection_item.dart';
+import 'package:stash_shelf/features/collections/presentation/pages/collection_detail_page.dart';
+import 'package:stash_shelf/features/library/domain/entities/library_item.dart';
+import 'package:stash_shelf/features/library/domain/repositories/library_repository.dart';
+import 'package:stash_shelf/features/library/domain/usecases/watch_library.dart';
+import 'package:stash_shelf/features/library/presentation/bloc/library_bloc.dart';
 
 class _FakeLibraryRepository implements LibraryRepository {
   @override

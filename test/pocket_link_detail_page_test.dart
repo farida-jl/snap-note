@@ -2,19 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
-import 'package:snap_note/core/router/app_routes.dart';
-import 'package:snap_note/features/pocket_link/presentation/bloc/pocket_link_bloc.dart';
-import 'package:snap_note/features/pocket_link/presentation/pages/pocket_link_page.dart';
-import 'package:snap_note/core/theme/app_theme.dart';
-import 'package:snap_note/features/collections/domain/entities/collection_item.dart';
-import 'package:snap_note/features/collections/domain/entities/new_collection.dart';
-import 'package:snap_note/features/collections/domain/repositories/collections_repository.dart';
-import 'package:snap_note/features/collections/domain/usecases/create_collection.dart';
-import 'package:snap_note/features/collections/domain/usecases/watch_collections.dart';
-import 'package:snap_note/features/collections/presentation/bloc/collections_bloc.dart';
-import 'package:snap_note/features/library/domain/entities/library_item.dart';
-import 'package:snap_note/features/pocket_link/domain/entities/pocket_link_draft.dart';
-import 'package:snap_note/features/pocket_link/presentation/pages/pocket_link_detail_page.dart';
+import 'package:stash_shelf/core/router/app_routes.dart';
+import 'package:stash_shelf/features/pocket_link/presentation/bloc/pocket_link_bloc.dart';
+import 'package:stash_shelf/features/pocket_link/presentation/pages/pocket_link_page.dart';
+import 'package:stash_shelf/core/theme/app_theme.dart';
+import 'package:stash_shelf/features/collections/domain/entities/collection_item.dart';
+import 'package:stash_shelf/features/collections/domain/entities/new_collection.dart';
+import 'package:stash_shelf/features/collections/domain/repositories/collections_repository.dart';
+import 'package:stash_shelf/features/collections/domain/usecases/create_collection.dart';
+import 'package:stash_shelf/features/collections/domain/usecases/watch_collections.dart';
+import 'package:stash_shelf/features/collections/presentation/bloc/collections_bloc.dart';
+import 'package:stash_shelf/features/library/domain/entities/library_item.dart';
+import 'package:stash_shelf/features/pocket_link/domain/entities/pocket_link_draft.dart';
+import 'package:stash_shelf/features/pocket_link/presentation/pages/pocket_link_detail_page.dart';
 
 class _CollectionsRepository implements CollectionsRepository {
   @override

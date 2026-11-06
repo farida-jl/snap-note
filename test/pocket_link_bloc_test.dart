@@ -1,8 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:snap_note/features/pocket_link/domain/entities/pocket_link_draft.dart';
-import 'package:snap_note/features/pocket_link/domain/repositories/pocket_link_repository.dart';
-import 'package:snap_note/features/pocket_link/domain/usecases/save_pocket_link.dart';
-import 'package:snap_note/features/pocket_link/presentation/bloc/pocket_link_bloc.dart';
+import 'package:stash_shelf/features/pocket_link/domain/entities/pocket_link_draft.dart';
+import 'package:stash_shelf/features/pocket_link/domain/repositories/pocket_link_repository.dart';
+import 'package:stash_shelf/features/pocket_link/domain/usecases/save_pocket_link.dart';
+import 'package:stash_shelf/features/pocket_link/presentation/bloc/pocket_link_bloc.dart';
 
 class _FakePocketLinkRepository implements PocketLinkRepository {
   PocketLinkDraft? savedDraft;

@@ -1,7 +1,7 @@
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:snap_note/core/database/app_database.dart';
+import 'package:stash_shelf/core/database/app_database.dart';
 
 void main() {
   test('seeds Read later on first database open', () async {

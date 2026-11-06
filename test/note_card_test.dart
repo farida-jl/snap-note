@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:snap_note/core/theme/app_theme.dart';
-import 'package:snap_note/features/library/domain/entities/library_item.dart';
-import 'package:snap_note/features/library/presentation/components/note_card.dart';
+import 'package:stash_shelf/core/theme/app_theme.dart';
+import 'package:stash_shelf/features/library/domain/entities/library_item.dart';
+import 'package:stash_shelf/features/library/presentation/components/note_card.dart';
 
 void main() {
   Widget buildSubject(String? markdown) {

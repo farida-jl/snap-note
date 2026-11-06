@@ -1,10 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:snap_note/features/collections/domain/entities/collection_item.dart';
-import 'package:snap_note/features/collections/domain/entities/new_collection.dart';
-import 'package:snap_note/features/collections/domain/repositories/collections_repository.dart';
-import 'package:snap_note/features/collections/domain/usecases/create_collection.dart';
-import 'package:snap_note/features/collections/domain/usecases/watch_collections.dart';
-import 'package:snap_note/features/collections/presentation/bloc/collections_bloc.dart';
+import 'package:stash_shelf/features/collections/domain/entities/collection_item.dart';
+import 'package:stash_shelf/features/collections/domain/entities/new_collection.dart';
+import 'package:stash_shelf/features/collections/domain/repositories/collections_repository.dart';
+import 'package:stash_shelf/features/collections/domain/usecases/create_collection.dart';
+import 'package:stash_shelf/features/collections/domain/usecases/watch_collections.dart';
+import 'package:stash_shelf/features/collections/presentation/bloc/collections_bloc.dart';
 
 class _FakeCollectionsRepository implements CollectionsRepository {
   NewCollection? createdCollection;

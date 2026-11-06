@@ -8,7 +8,7 @@ import 'package:path_provider/path_provider.dart';
 LazyDatabase createDatabaseConnection() {
   return LazyDatabase(() async {
     final directory = await getApplicationDocumentsDirectory();
-    final databaseFile = File(p.join(directory.path, 'snap_note.sqlite'));
+    final databaseFile = File(p.join(directory.path, 'stash_shelf.sqlite'));
 
     return NativeDatabase.createInBackground(databaseFile);
   });
