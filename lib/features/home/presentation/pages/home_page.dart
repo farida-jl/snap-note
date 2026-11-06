@@ -28,7 +28,7 @@ class _HomePageState extends State<HomePage> {
       label: 'Collections',
       iconAsset: 'assets/icons/folders.svg',
     ),
-    _HomeDestination(label: 'Profile', iconAsset: 'assets/icons/profile.svg'),
+    //_HomeDestination(label: 'Profile', iconAsset: 'assets/icons/profile.svg'),
   ];
 
   @override
